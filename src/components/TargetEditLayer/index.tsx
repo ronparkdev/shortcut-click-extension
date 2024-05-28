@@ -1,7 +1,8 @@
-import React from 'react'
 import { Slider } from 'antd'
+import type { FC } from 'react'
+import React from 'react'
 
-export const TargetEditLayer = () => {
+export const TargetEditLayer: FC = () => {
   return (
     <>
       <input type="range" id="element-selector" name="element-selector" min="0" max="10" />

@@ -1,6 +1,7 @@
 import React, { StrictMode } from 'react'
-import { TargetEditLayer } from './components/TargetEditLayer'
 import { createRoot } from 'react-dom/client'
+
+import { TargetEditLayer } from './components/TargetEditLayer'
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener(request => {
