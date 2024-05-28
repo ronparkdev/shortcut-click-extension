@@ -1,7 +1,16 @@
 import React from 'react'
+import { Slider } from 'antd'
 
 export const TargetEditLayer = () => {
-  return <>Test</>
+  return (
+    <>
+      <input type="range" id="element-selector" name="element-selector" min="0" max="10" />
+      <input type="range" id="site-selector" name="site-selector" min="0" max="2" />
+      <input type="text" id="key-selector" name="key-selector" />
+      <button id="save-shortcut">Save</button>
+      <Slider min={0} max={10} defaultValue={5} />
+    </>
+  )
 }
 
 // let lastMousePosition: { x: number; y: number } | null = null;

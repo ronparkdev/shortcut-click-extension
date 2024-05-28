@@ -7,6 +7,7 @@
     "playground": "react-scripts start"
   },
   "dependencies": {
+    "antd": "^5.17.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
