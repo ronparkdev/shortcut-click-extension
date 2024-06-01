@@ -1,149 +1,128 @@
-import { Slider } from 'antd'
+import { Button, Slider, Modal, Form, Typography } from 'antd'
+import { useTargetsConfig } from 'hooks/config'
 import type { FC } from 'react'
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import Draggable from 'react-draggable'
+import { useHotkeys } from 'react-hotkeys-hook'
+import type { HotKey } from 'services/hotKey'
+import { HotKeyService } from 'services/hotKey'
 
-export const TargetEditLayer: FC = () => {
-  return (
-    <>
-      <input type="range" id="element-selector" name="element-selector" min="0" max="10" />
-      <input type="range" id="site-selector" name="site-selector" min="0" max="2" />
-      <input type="text" id="key-selector" name="key-selector" />
-      <button id="save-shortcut">Save</button>
-      <Slider min={0} max={10} defaultValue={5} />
-    </>
-  )
+const { Title, Text } = Typography
+
+type Props = {
+  onChangeHighlight: (xPathSelector: string | null) => void
+  onClose: () => void
+  defaultSelector?: string
+  defaultUrl?: string
 }
 
-// let lastMousePosition: { x: number; y: number } | null = null;
+export const TargetEditLayer: FC<Props> = ({
+  onChangeHighlight,
+  onClose,
+  defaultSelector = '#VPContent > div > div > div.aside > div.aside-container > div > div > nav > div > ul > li:nth-child(5) > ul > li:nth-child(12) > a',
+  defaultUrl = 'https://naver.com/test/1/2/3/4/5/6',
+}) => {
+  const [open, setOpen] = useState(true)
 
-// document.addEventListener("mousemove", (event) => {
-//   lastMousePosition = {
-//     x: event.pageX,
-//     y: event.pageY,
-//   };
-// });
+  const [targets, setTargets] = useTargetsConfig()
 
-// function openShortcutDialog() {
-//   if (!lastMousePosition) return null;
-//   const element = document.elementFromPoint(
-//     lastMousePosition.x,
-//     lastMousePosition.y
-//   );
+  const selectors = useMemo(() => defaultSelector.split('/'), [defaultSelector])
+  const [selectorMaxIndex, setSelectorMaxIndex] = useState(Math.max(0, selectors.length))
+  const selector = selectors.slice(0, selectorMaxIndex).join('/')
 
-//   const initialSelector = getElementSelector(element);
+  const urlParts = useMemo(() => defaultUrl.split('/'), [defaultUrl])
+  const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
+  const url = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
 
-//   let dialog = document.createElement("div");
-//   dialog.id = "shortcut-dialog";
-//   dialog.style.position = "fixed";
-//   dialog.style.top = "50%";
-//   dialog.style.left = "50%";
-//   dialog.style.transform = "translate(-50%, -50%)";
-//   dialog.style.padding = "20px";
-//   dialog.style.backgroundColor = "white";
-//   dialog.style.border = "1px solid black";
-//   dialog.style.zIndex = 10000;
+  const [hotKey, setHotKey] = useState<HotKey | null>(null)
 
-//   dialog.innerHTML = `
-//       <label for="element-selector">Select Element:</label>
-//       <input type="range" id="element-selector" name="element-selector" min="0" max="10">
-//       <span id="element-display">${initialSelector}</span>
-//       <label for="site-selector">Select Site:</label>
-//       <input type="range" id="site-selector" name="site-selector" min="0" max="2">
-//       <label for="key-selector">Shortcut Key:</label>
-//       <input type="text" id="key-selector" name="key-selector">
-//       <button id="save-shortcut">Save</button>
-//     `;
+  const [isHotKeyListening, setHotKeyListening] = useState(false)
 
-//   document.body.appendChild(dialog);
+  useEffect(() => {
+    onChangeHighlight(selector)
+  }, [selector])
 
-//   const elSelector = document.getElementById("element-selector");
+  const handleClose = () => {
+    onChangeHighlight(null)
+    onClose()
+    setOpen(false)
+  }
 
-//   document
-//     .getElementById("element-selector")
-//     .addEventListener("input", (event) => {
-//       document.getElementById("element-display").textContent = getSelectorPath(
-//         event.target.value
-//       );
-//     });
+  const handleSave = () => {
+    if (hotKey !== null) {
+      setTargets([...targets, { selector, url, hotKey }])
+    }
+    handleClose()
+  }
 
-//   document.getElementById("save-shortcut").addEventListener("click", () => {
-//     let elementSelector =
-//       document.getElementById("element-display").textContent;
-//     let siteSelector = document.getElementById("site-selector").value;
-//     let keySelector = document.getElementById("key-selector").value;
+  const keyRef = useHotkeys<HTMLButtonElement>('*', event => {
+    event.preventDefault()
+    setHotKey(HotKeyService.parse(event))
+  })
 
-//     let selectedSite = ["current", "wildcard", "super-wildcard"][siteSelector];
+  const isValid = HotKeyService.isValid(hotKey)
 
-//     chrome.storage.sync.get("shortcuts", (data) => {
-//       let shortcuts = data.shortcuts || [];
-//       shortcuts.push({
-//         element: elementSelector,
-//         site: selectedSite,
-//         key: keySelector,
-//       });
-
-//       chrome.storage.sync.set({ shortcuts }, () => {
-//         alert("Shortcut saved!");
-//         dialog.remove();
-//       });
-//     });
-//   });
-
-//   function getSelectorPath(value) {
-//     return initialSelector;
-//   }
-// }
-
-// // Listen for keydown events to trigger shortcuts
-// // document.addEventListener('keydown', (event) => {
-// //   chrome.storage.sync.get('shortcuts', (data) => {
-// //     let shortcuts = data.shortcuts || [];
-// //     let currentURL = window.location.href;
-
-// //     shortcuts.forEach((shortcut) => {
-// //       if (shortcut.key === event.key) {
-// //         if (matchSite(currentURL, shortcut.site)) {
-// //           let targetElement = document.querySelector(shortcut.element);
-// //           if (targetElement) {
-// //             targetElement.click();
-// //           }
-// //         }
-// //       }
-// //     });
-// //   });
-// // });
-
-// function matchSite(currentURL, sitePattern) {
-//   if (sitePattern === "current") {
-//     return currentURL === window.location.href;
-//   } else if (sitePattern === "wildcard") {
-//     let wildcardPattern = new RegExp("^" + sitePattern.replace(/\*/g, ".*"));
-//     return wildcardPattern.test(currentURL);
-//   } else if (sitePattern === "super-wildcard") {
-//     return true;
-//   }
-//   return false;
-// }
-
-// function getElementSelector(element) {
-//   if (!element) return null;
-//   let path = [];
-//   while (element.parentElement) {
-//     let tag = element.tagName.toLowerCase();
-//     if (element.id) {
-//       tag += `#${element.id}`;
-//       path.unshift(tag);
-//       break;
-//     } else {
-//       let siblingIndex = 0;
-//       for (let sibling of element.parentElement.children) {
-//         if (sibling === element) break;
-//         if (sibling.tagName === element.tagName) siblingIndex++;
-//       }
-//       tag += `:nth-of-type(${siblingIndex + 1})`;
-//     }
-//     path.unshift(tag);
-//     element = element.parentElement;
-//   }
-//   return path.join(" > ");
-// }
+  return (
+    <Modal
+      open={open}
+      okButtonProps={{ disabled: !isValid }}
+      onOk={handleSave}
+      onCancel={handleClose}
+      onClose={handleClose}
+      mask={false}
+      maskClosable={false}
+      title={
+        <Title level={3} style={{ marginTop: 15 }}>
+          Setup
+        </Title>
+      }
+      modalRender={modal => (
+        <Draggable>
+          <div style={{ cursor: 'move' }}>{modal}</div>
+        </Draggable>
+      )}
+      centered>
+      <Form layout="vertical">
+        <Form.Item
+          label={
+            <Text strong style={{ fontSize: '16px' }}>
+              Selector
+            </Text>
+          }
+          style={{ marginBottom: 12 }}>
+          <Text>{selector}</Text>
+          <Slider min={2} max={selectors.length} defaultValue={selectorMaxIndex} onChange={setSelectorMaxIndex} />
+        </Form.Item>
+        <Form.Item
+          label={
+            <Text strong style={{ fontSize: '16px' }}>
+              URL
+            </Text>
+          }
+          style={{ marginBottom: 12 }}>
+          <Text>{url}</Text>
+          <Slider min={2} max={urlParts.length} defaultValue={urlPartMaxIndex} onChange={setUrlPartMaxIndex} />
+        </Form.Item>
+        <Form.Item
+          label={
+            <Text strong style={{ fontSize: '16px' }}>
+              Shortcut Key
+            </Text>
+          }
+          style={{ marginBottom: 12 }}>
+          <Button
+            ref={keyRef}
+            onFocus={() => setHotKeyListening(true)}
+            onBlur={() => setHotKeyListening(false)}
+            type={isHotKeyListening ? 'primary' : undefined}>
+            {hotKey
+              ? HotKeyService.getText(hotKey)
+              : isHotKeyListening
+                ? 'Press keys to record shortcut'
+                : 'Click here to record shortcut'}
+          </Button>
+        </Form.Item>
+      </Form>
+    </Modal>
+  )
+}
