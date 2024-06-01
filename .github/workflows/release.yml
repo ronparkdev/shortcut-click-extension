@@ -1,0 +1,54 @@
+name: Build and Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Build the project
+      run: pnpm build
+
+    - name: Compress build folder
+      run: zip -r shortcut-click-extension.zip dist/*
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: shortcut-click-extension
+        path: shortcut-click-extension.zip
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: shortcut-click-extension.zip
+        asset_name: shortcut-click-extension.zip
+        asset_content_type: application/zip
