@@ -30,7 +30,7 @@ jobs:
       run: pnpm build
 
     - name: Compress build folder
-      run: zip -r shortcut-click-extension.zip dist/*
+      run: zip -r shortcut-click-extension.zip manifest.json dist/* icons/* public/*
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
