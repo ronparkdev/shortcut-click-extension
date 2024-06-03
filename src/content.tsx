@@ -1,6 +1,18 @@
 import type { TargetConfig } from 'services/config'
 
 void (async () => {
+  let lastElement: Element | null = null
+  let lastTargets: TargetConfig[] = []
+
+  document.addEventListener(
+    'contextmenu',
+    event => {
+      const element = document.elementFromPoint(event.clientX, event.clientY)
+      lastElement = element ?? null
+    },
+    { capture: true },
+  )
+
   const [
     { default: getXPath },
     { ConfigService },
@@ -18,9 +30,6 @@ void (async () => {
     import('utils/url'),
     import('utils/chromeStorage'),
   ])
-
-  let lastElement: Element | null = null
-  let lastTargets: TargetConfig[] = []
 
   ChromeStorageUtils.get<TargetConfig[]>(ConfigService.TARGETS_KEY, []).then(targets => {
     lastTargets = targets
@@ -72,11 +81,6 @@ void (async () => {
       const defaultUrl = UrlUtils.getCurrentUrl()
       void render({ visible: true, defaultSelector, defaultUrl })
     }
-  })
-
-  document.addEventListener('contextmenu', event => {
-    const element = document.elementFromPoint(event.clientX, event.clientY)
-    lastElement = element ?? null
   })
 
   document.addEventListener('keydown', async event => {
