@@ -1,27 +1,21 @@
-import { DeleteOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, List, Card, message, Input } from 'antd'
+import { DeleteOutlined } from '@ant-design/icons'
+import { Button, List, Card, message } from 'antd'
 import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
-import React, { useState, useEffect } from 'react'
-import { UrlUtils } from 'utils/url'
+import React, { useEffect } from 'react'
 
 const CurrentTargetPopup: React.FC = () => {
   const url = useCurrentUrl()
 
   const [targets, setTargets] = useTargetsConfig()
-  const [filter, setFilter] = useState<string>(url)
 
   useEffect(() => {
     document.body.style.width = '600px'
-    void UrlUtils.getCurrentTabUrl().then(setFilter)
   }, [])
-
-  useEffect(() => {
-    setFilter(url)
-  }, [url])
 
   const removeTarget = async (offset: number) => {
     try {
+      alert(JSON.stringify({ f: targets, t: [...targets.slice(0, offset), ...targets.slice(offset + 1)] }))
       await setTargets([...targets.slice(0, offset), ...targets.slice(offset + 1)])
       message.success('Target removed')
     } catch (error) {
@@ -29,21 +23,21 @@ const CurrentTargetPopup: React.FC = () => {
     }
   }
 
-  const filteredTargets = targets.filter(target => target.url.includes(filter))
+  const filteredTargets = targets.filter(target => {
+    if (target.url.endsWith('/*')) {
+      if (url.endsWith('/')) {
+        return url.startsWith(target.url.replace('/*', '/'))
+      } else {
+        return url.startsWith(target.url.replace('/*', ''))
+      }
+    } else {
+      return url === target.url
+    }
+  })
 
   return (
     <div style={{ padding: '2px' }}>
-      <Card
-        title="Config"
-        extra={
-          <Input
-            placeholder="Filter by URL"
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            prefix={<SearchOutlined />}
-            key={0}
-          />
-        }>
+      <Card title="Config">
         <List
           bordered
           dataSource={filteredTargets}
