@@ -36,7 +36,6 @@ The extension requires the following permissions:
 - `storage`: To store user-defined shortcuts.
 - `activeTab`: To interact with the currently active tab.
 - `contextMenus`: To add items to the right-click context menu.
-- `scripting`: To execute scripts on web pages.
 
 ## Development
 For developers interested in contributing or customizing the extension:
