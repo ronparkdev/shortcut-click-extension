@@ -22,7 +22,6 @@ const findClickableParentXPathSelector = (xPathSelector: string, minSize: number
   return (
     possibleSelectors.find((selector, offset) => {
       const reversedOffset = possibleSelectors.length - offset - 1
-      console.log({ selector, offset, part: parts[reversedOffset] })
       return ['a', 'button', 'summary'].some(tag => parts[reversedOffset].startsWith(tag))
     }) ??
     possibleSelectors.find(selector => {
@@ -31,7 +30,6 @@ const findClickableParentXPathSelector = (xPathSelector: string, minSize: number
       return parentElements.some(element => {
         if (element instanceof HTMLElement) {
           const rect = element.getBoundingClientRect()
-          console.log({ element, rect })
           return rect.width * rect.height >= minSize
         }
 
