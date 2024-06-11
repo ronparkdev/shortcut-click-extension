@@ -26,6 +26,15 @@ jobs:
     - name: Install dependencies
       run: pnpm install
 
+    - name: Install jq
+      uses: dcarbone/install-jq-action@v1
+
+    - name: Update manifest version
+      run: |
+        release_version=${{ github.event.release.tag_name }}
+        jq --arg version "$release_version" '.version = $version' manifest.json > manifest.temp.json
+        mv manifest.temp.json manifest.json
+
     - name: Build the project
       run: pnpm build
 
