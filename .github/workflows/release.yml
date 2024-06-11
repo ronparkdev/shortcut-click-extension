@@ -27,7 +27,7 @@ jobs:
       run: pnpm install
 
     - name: Install jq
-      uses: dcarbone/install-jq-action@v1
+      uses: dcarbone/install-jq-action@v2
 
     - name: Update manifest version
       run: |
