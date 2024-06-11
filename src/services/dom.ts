@@ -12,6 +12,35 @@ const getRootElement = () => {
   )
 }
 
+const findClickableParentXPathSelector = (xPathSelector: string, minSize: number = 10) => {
+  const parts = xPathSelector.split('/')
+  const possibleSelectors = parts
+    .map((_, i) => i)
+    .reverse()
+    .map(i => parts.slice(0, i + 1).join('/'))
+
+  return (
+    possibleSelectors.find((selector, offset) => {
+      const reversedOffset = possibleSelectors.length - offset - 1
+      console.log({ selector, offset, part: parts[reversedOffset] })
+      return ['a', 'button', 'summary'].some(tag => parts[reversedOffset].startsWith(tag))
+    }) ??
+    possibleSelectors.find(selector => {
+      const parentElements = findElementsByXPath(selector)
+
+      return parentElements.some(element => {
+        if (element instanceof HTMLElement) {
+          const rect = element.getBoundingClientRect()
+          console.log({ element, rect })
+          return rect.width * rect.height >= minSize
+        }
+
+        return false
+      })
+    })
+  )
+}
+
 const findElementsByXPath = (xPathSelector: string) => {
   const result = []
 
@@ -23,4 +52,4 @@ const findElementsByXPath = (xPathSelector: string) => {
   return result
 }
 
-export const DomService = { getRootElement, findElementsByXPath }
+export const DomService = { getRootElement, findClickableParentXPathSelector, findElementsByXPath }

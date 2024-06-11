@@ -77,9 +77,12 @@ void (async () => {
   // Listen for messages from the background script
   chrome.runtime.onMessage.addListener(request => {
     if (request.action === 'openShortcutDialog' && lastElement !== null) {
-      const defaultSelector = getXPath(lastElement)
+      const selector = getXPath(lastElement)
+
+      const clickableSelector = DomService.findClickableParentXPathSelector(selector)
+
       const defaultUrl = UrlUtils.getCurrentUrl()
-      void render({ visible: true, defaultSelector, defaultUrl })
+      void render({ visible: true, defaultSelector: clickableSelector, defaultUrl })
     }
   })
 
