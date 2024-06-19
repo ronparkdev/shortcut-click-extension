@@ -1,11 +1,11 @@
 import { DomService } from './dom'
 
-const highlight = (target: string | HTMLElement | null) => {
+const highlight = (target: string | Element | null) => {
   // Remove any existing highlights
   Array.from(document.querySelectorAll('.element-highlight')).forEach(el => el.classList.remove('element-highlight'))
 
   if (target !== null) {
-    if (target instanceof HTMLElement) {
+    if (target instanceof Element) {
       target.classList.add('element-highlight')
     } else {
       DomService.findElementsByXPath(target).forEach(

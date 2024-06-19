@@ -1,7 +1,7 @@
 import type { TargetConfig } from 'services/config'
 
 void (async () => {
-  let lastElement: HTMLElement | null = null
+  let lastElement: Element | null = null
   let lastTargets: TargetConfig[] = []
   let mode: 'standby' | 'addTarget' = 'standby'
 
@@ -63,42 +63,50 @@ void (async () => {
 
   // Low priority functions (for setting)
 
-  const [{ default: getXPath }, { DomHighlightService }] = await Promise.all([
-    import('get-xpath'),
-    import('services/domHighlight'),
-  ])
+  const [
+    { default: getXPath },
+    { DomHighlightService },
+    { NOTIFICATION_CLASSNAME, showAddTargetToast, cancelAddTarget },
+  ] = await Promise.all([import('get-xpath'), import('services/domHighlight'), import('notification')])
 
   document.addEventListener('mousemove', event => {
     if (mode === 'addTarget') {
       const element = DomService.getElementFromPoint(event.clientX, event.clientY)
 
-      const clickableElement = element !== null ? DomService.findVisibleClickableAndSufficientSizeParent(element) : null
+      let clickableElement = element !== null ? DomService.findVisibleClickableAndSufficientSizeParent(element) : null
 
-      if (clickableElement !== null) {
-        DomHighlightService.highlight(clickableElement)
+      if (clickableElement?.closest(`.${NOTIFICATION_CLASSNAME}`)) {
+        clickableElement = null
       }
+
+      DomHighlightService.highlight(clickableElement)
 
       lastElement = clickableElement
     }
   })
 
-  document.addEventListener('click', event => {
-    if (mode === 'addTarget') {
-      event.preventDefault()
+  document.addEventListener(
+    'click',
+    event => {
+      if (mode === 'addTarget') {
+        event.preventDefault()
+        event.stopPropagation()
 
-      if (lastElement !== null) {
-        showDialog({ element: lastElement })
+        if (lastElement !== null) {
+          showDialog({ element: lastElement })
+        }
+
+        cancelAddTarget()
+
+        mode = 'standby'
       }
-
-      DomHighlightService.highlight(null)
-
-      mode = 'standby'
-    }
-  })
+    },
+    { capture: true },
+  )
 
   DomHighlightService.injectStyle()
 
-  const showDialog = async ({ element }: { element: HTMLElement }) => {
+  const showDialog = async ({ element }: { element: Element }) => {
     const selector = getXPath(element)
     const defaultUrl = UrlUtils.getCurrentUrl()
     void render({ visible: true, defaultSelector: selector, defaultUrl })
@@ -156,6 +164,10 @@ void (async () => {
 
     if (request.action === 'addTarget') {
       mode = 'addTarget'
+      showAddTargetToast(() => {
+        mode = 'standby'
+        cancelAddTarget()
+      })
     }
   })
 })()

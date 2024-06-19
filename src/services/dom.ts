@@ -1,32 +1,31 @@
 const ROOT_ID = '_shortcut_click_extension_root_'
 
-export const getElementFromPoint = (x: number, y: number): HTMLElement | null => {
-  const element = document.elementFromPoint(x, y)
-  return element instanceof HTMLElement ? element : null
+export const getElementFromPoint = (x: number, y: number): Element | null => {
+  return document.elementFromPoint(x, y)
 }
 
-const isElementVisible = (element: HTMLElement | null): boolean => {
+const isElementVisible = (element: Element | null): boolean => {
   if (!element) return false
 
   const style = getComputedStyle(element)
   return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0'
 }
 
-const isElementClickable = (element: HTMLElement | null): boolean => {
+const isElementClickable = (element: Element | null): boolean => {
   if (!element) return false
 
   const style = getComputedStyle(element)
   return style.pointerEvents !== 'none'
 }
 
-const isElementSizeSufficient = (element: HTMLElement | null): boolean => {
+const isElementSizeSufficient = (element: Element | null): boolean => {
   if (!element) return false
 
   const rect = element.getBoundingClientRect()
   return rect.width * rect.height > 8
 }
 
-const findVisibleClickableAndSufficientSizeParent = (element: HTMLElement | null): HTMLElement | null => {
+const findVisibleClickableAndSufficientSizeParent = (element: Element | null): Element | null => {
   let currentElement = element
 
   while (currentElement) {
@@ -37,7 +36,7 @@ const findVisibleClickableAndSufficientSizeParent = (element: HTMLElement | null
     ) {
       return currentElement
     }
-    currentElement = currentElement.parentElement as HTMLElement | null
+    currentElement = currentElement.parentElement as Element | null
   }
 
   return null
