@@ -1,4 +1,4 @@
-import { DeleteOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, List, Card, message } from 'antd'
 import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
@@ -6,7 +6,6 @@ import React, { useEffect } from 'react'
 
 const TargetPopup: React.FC = () => {
   const url = useCurrentUrl()
-
   const [targets, setTargets] = useTargetsConfig()
 
   useEffect(() => {
@@ -20,6 +19,18 @@ const TargetPopup: React.FC = () => {
     } catch (error) {
       message.error('Failed to remove target')
     }
+  }
+
+  const addTarget = async () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (tabs[0].id) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'addTarget' }, response => {
+          console.log('Response from content script:', response)
+
+          window.close()
+        })
+      }
+    })
   }
 
   const filteredTargets = targets.filter(target => {
@@ -36,7 +47,13 @@ const TargetPopup: React.FC = () => {
 
   return (
     <div style={{ padding: '2px' }}>
-      <Card title="Config">
+      <Card
+        title="Config"
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={addTarget}>
+            Add
+          </Button>
+        }>
         <List
           bordered
           dataSource={filteredTargets}

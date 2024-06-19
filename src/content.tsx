@@ -1,14 +1,15 @@
 import type { TargetConfig } from 'services/config'
 
 void (async () => {
-  let lastElement: Element | null = null
+  let lastElement: HTMLElement | null = null
   let lastTargets: TargetConfig[] = []
+  let mode: 'standby' | 'addTarget' = 'standby'
 
   document.addEventListener(
     'contextmenu',
     event => {
-      const element = document.elementFromPoint(event.clientX, event.clientY)
-      lastElement = element ?? null
+      const element = document.elementFromPoint(event.clientX, event.clientY) ?? null
+      lastElement = element instanceof HTMLElement ? element : null
     },
     { capture: true },
   )
@@ -31,6 +32,37 @@ void (async () => {
     import('utils/chromeStorage'),
   ])
 
+  document.addEventListener('mousemove', event => {
+    if (mode === 'addTarget') {
+      const element = document.elementFromPoint(event.clientX, event.clientY)
+
+      const clickableElement =
+        element !== null && element instanceof HTMLElement
+          ? DomService.findVisibleClickableAndSufficientSizeParent(element)
+          : null
+
+      if (clickableElement !== null) {
+        DomHighlightService.highlight(clickableElement)
+      }
+
+      lastElement = clickableElement
+    }
+  })
+
+  document.addEventListener('click', event => {
+    if (mode === 'addTarget') {
+      event.preventDefault()
+
+      if (lastElement !== null) {
+        showDialog({ element: lastElement })
+      }
+
+      DomHighlightService.highlight(null)
+
+      mode = 'standby'
+    }
+  })
+
   ChromeStorageUtils.get<TargetConfig[]>(ConfigService.TARGETS_KEY, []).then(targets => {
     lastTargets = targets
   })
@@ -39,6 +71,12 @@ void (async () => {
   })
 
   DomHighlightService.injectStyle()
+
+  const showDialog = ({ element }: { element: HTMLElement }) => {
+    const selector = getXPath(element)
+    const defaultUrl = UrlUtils.getCurrentUrl()
+    void render({ visible: true, defaultSelector: selector, defaultUrl })
+  }
 
   const render = async ({
     visible,
@@ -76,21 +114,22 @@ void (async () => {
 
   // Listen for messages from the background script
   chrome.runtime.onMessage.addListener(request => {
-    if (request.action === 'openShortcutDialog' && lastElement !== null) {
-      const clickableButton =
+    if (request.action === 'openShortcutDialog') {
+      const clickableElement =
         lastElement !== null && lastElement instanceof HTMLElement
           ? DomService.findVisibleClickableAndSufficientSizeParent(lastElement)
           : null
 
-      if (!clickableButton) {
+      if (!clickableElement) {
         alert('The element located at the current cursor could not be found.')
         return
       }
 
-      const selector = getXPath(clickableButton)
+      showDialog({ element: clickableElement })
+    }
 
-      const defaultUrl = UrlUtils.getCurrentUrl()
-      void render({ visible: true, defaultSelector: selector, defaultUrl })
+    if (request.action === 'addTarget') {
+      mode = 'addTarget'
     }
   })
 
