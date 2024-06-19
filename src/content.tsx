@@ -5,6 +5,8 @@ void (async () => {
   let lastTargets: TargetConfig[] = []
   let mode: 'standby' | 'addTarget' = 'standby'
 
+  // Top priority functions (for save mouse position for contextmenu)
+
   const [{ DomService }] = await Promise.all([import('services/dom')])
 
   document.addEventListener(
@@ -15,20 +17,55 @@ void (async () => {
     { capture: true },
   )
 
-  const [
-    { default: getXPath },
-    { ConfigService },
-    { DomHighlightService },
-    { HotKeyService },
-    { UrlUtils },
-    { ChromeStorageUtils },
-  ] = await Promise.all([
-    import('get-xpath'),
+  // Middle priority functions (for hotkey)
+
+  const [{ ConfigService }, { HotKeyService }, { UrlUtils }, { ChromeStorageUtils }] = await Promise.all([
     import('services/config'),
-    import('services/domHighlight'),
     import('services/hotKey'),
     import('utils/url'),
     import('utils/chromeStorage'),
+  ])
+
+  ChromeStorageUtils.get<TargetConfig[]>(ConfigService.TARGETS_KEY, []).then(targets => {
+    lastTargets = targets
+  })
+
+  ChromeStorageUtils.listen<TargetConfig[]>(ConfigService.TARGETS_KEY, targets => {
+    lastTargets = targets
+  })
+
+  document.addEventListener('keydown', async event => {
+    const url = UrlUtils.getCurrentUrl()
+    const hotKey = HotKeyService.parse(event)
+
+    const hitTargets = lastTargets
+      .filter(target => {
+        if (target.url.endsWith('/*')) {
+          if (url.endsWith('/')) {
+            return url.startsWith(target.url.replace('/*', '/'))
+          } else {
+            return url.startsWith(target.url.replace('/*', ''))
+          }
+        } else {
+          return url === target.url
+        }
+      })
+      .filter(target => HotKeyService.checkIsSame(hotKey, target.hotKey))
+
+    hitTargets
+      .flatMap(target => DomService.findElementsByXPath(target.selector))
+      .forEach(element => {
+        if (element instanceof HTMLElement) {
+          element.click()
+        }
+      })
+  })
+
+  // Low priority functions (for setting)
+
+  const [{ default: getXPath }, { DomHighlightService }] = await Promise.all([
+    import('get-xpath'),
+    import('services/domHighlight'),
   ])
 
   document.addEventListener('mousemove', event => {
@@ -59,16 +96,9 @@ void (async () => {
     }
   })
 
-  ChromeStorageUtils.get<TargetConfig[]>(ConfigService.TARGETS_KEY, []).then(targets => {
-    lastTargets = targets
-  })
-  ChromeStorageUtils.listen<TargetConfig[]>(ConfigService.TARGETS_KEY, targets => {
-    lastTargets = targets
-  })
-
   DomHighlightService.injectStyle()
 
-  const showDialog = ({ element }: { element: HTMLElement }) => {
+  const showDialog = async ({ element }: { element: HTMLElement }) => {
     const selector = getXPath(element)
     const defaultUrl = UrlUtils.getCurrentUrl()
     void render({ visible: true, defaultSelector: selector, defaultUrl })
@@ -127,32 +157,5 @@ void (async () => {
     if (request.action === 'addTarget') {
       mode = 'addTarget'
     }
-  })
-
-  document.addEventListener('keydown', async event => {
-    const url = UrlUtils.getCurrentUrl()
-    const hotKey = HotKeyService.parse(event)
-
-    const hitTargets = lastTargets
-      .filter(target => {
-        if (target.url.endsWith('/*')) {
-          if (url.endsWith('/')) {
-            return url.startsWith(target.url.replace('/*', '/'))
-          } else {
-            return url.startsWith(target.url.replace('/*', ''))
-          }
-        } else {
-          return url === target.url
-        }
-      })
-      .filter(target => HotKeyService.checkIsSame(hotKey, target.hotKey))
-
-    hitTargets
-      .flatMap(target => DomService.findElementsByXPath(target.selector))
-      .forEach(element => {
-        if (element instanceof HTMLElement) {
-          element.click()
-        }
-      })
   })
 })()
