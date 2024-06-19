@@ -4,7 +4,7 @@ import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
 import React, { useEffect } from 'react'
 
-const CurrentTargetPopup: React.FC = () => {
+const TargetPopup: React.FC = () => {
   const url = useCurrentUrl()
 
   const [targets, setTargets] = useTargetsConfig()
@@ -67,4 +67,4 @@ const CurrentTargetPopup: React.FC = () => {
   )
 }
 
-export { CurrentTargetPopup }
+export { TargetPopup as CurrentTargetPopup }
