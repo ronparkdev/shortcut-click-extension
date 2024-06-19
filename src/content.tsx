@@ -5,11 +5,12 @@ void (async () => {
   let lastTargets: TargetConfig[] = []
   let mode: 'standby' | 'addTarget' = 'standby'
 
+  const [{ DomService }] = await Promise.all([import('services/dom')])
+
   document.addEventListener(
     'contextmenu',
     event => {
-      const element = document.elementFromPoint(event.clientX, event.clientY) ?? null
-      lastElement = element instanceof HTMLElement ? element : null
+      lastElement = DomService.getElementFromPoint(event.clientX, event.clientY)
     },
     { capture: true },
   )
@@ -17,7 +18,6 @@ void (async () => {
   const [
     { default: getXPath },
     { ConfigService },
-    { DomService },
     { DomHighlightService },
     { HotKeyService },
     { UrlUtils },
@@ -25,7 +25,6 @@ void (async () => {
   ] = await Promise.all([
     import('get-xpath'),
     import('services/config'),
-    import('services/dom'),
     import('services/domHighlight'),
     import('services/hotKey'),
     import('utils/url'),
@@ -34,12 +33,9 @@ void (async () => {
 
   document.addEventListener('mousemove', event => {
     if (mode === 'addTarget') {
-      const element = document.elementFromPoint(event.clientX, event.clientY)
+      const element = DomService.getElementFromPoint(event.clientX, event.clientY)
 
-      const clickableElement =
-        element !== null && element instanceof HTMLElement
-          ? DomService.findVisibleClickableAndSufficientSizeParent(element)
-          : null
+      const clickableElement = element !== null ? DomService.findVisibleClickableAndSufficientSizeParent(element) : null
 
       if (clickableElement !== null) {
         DomHighlightService.highlight(clickableElement)

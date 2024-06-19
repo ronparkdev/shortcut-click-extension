@@ -1,5 +1,10 @@
 const ROOT_ID = '_shortcut_click_extension_root_'
 
+export const getElementFromPoint = (x: number, y: number): HTMLElement | null => {
+  const element = document.elementFromPoint(x, y)
+  return element instanceof HTMLElement ? element : null
+}
+
 const isElementVisible = (element: HTMLElement | null): boolean => {
   if (!element) return false
 
@@ -64,5 +69,6 @@ const findElementsByXPath = (xPathSelector: string) => {
 export const DomService = {
   findElementsByXPath,
   findVisibleClickableAndSufficientSizeParent,
+  getElementFromPoint,
   getRootElement,
 }
