@@ -15,7 +15,6 @@ const CurrentTargetPopup: React.FC = () => {
 
   const removeTarget = async (offset: number) => {
     try {
-      alert(JSON.stringify({ f: targets, t: [...targets.slice(0, offset), ...targets.slice(offset + 1)] }))
       await setTargets([...targets.slice(0, offset), ...targets.slice(offset + 1)])
       message.success('Target removed')
     } catch (error) {
