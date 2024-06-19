@@ -77,12 +77,20 @@ void (async () => {
   // Listen for messages from the background script
   chrome.runtime.onMessage.addListener(request => {
     if (request.action === 'openShortcutDialog' && lastElement !== null) {
-      const selector = getXPath(lastElement)
+      const clickableButton =
+        lastElement !== null && lastElement instanceof HTMLElement
+          ? DomService.findVisibleClickableAndSufficientSizeParent(lastElement)
+          : null
 
-      const clickableSelector = DomService.findClickableParentXPathSelector(selector)
+      if (!clickableButton) {
+        alert('The element located at the current cursor could not be found.')
+        return
+      }
+
+      const selector = getXPath(clickableButton)
 
       const defaultUrl = UrlUtils.getCurrentUrl()
-      void render({ visible: true, defaultSelector: clickableSelector, defaultUrl })
+      void render({ visible: true, defaultSelector: selector, defaultUrl })
     }
   })
 

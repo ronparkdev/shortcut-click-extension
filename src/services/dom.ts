@@ -1,5 +1,43 @@
 const ROOT_ID = '_shortcut_click_extension_root_'
 
+const isElementVisible = (element: HTMLElement | null): boolean => {
+  if (!element) return false
+
+  const style = getComputedStyle(element)
+  return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0'
+}
+
+const isElementClickable = (element: HTMLElement | null): boolean => {
+  if (!element) return false
+
+  const style = getComputedStyle(element)
+  return style.pointerEvents !== 'none'
+}
+
+const isElementSizeSufficient = (element: HTMLElement | null): boolean => {
+  if (!element) return false
+
+  const rect = element.getBoundingClientRect()
+  return rect.width * rect.height > 8
+}
+
+const findVisibleClickableAndSufficientSizeParent = (element: HTMLElement | null): HTMLElement | null => {
+  let currentElement = element
+
+  while (currentElement) {
+    if (
+      isElementVisible(currentElement) &&
+      isElementClickable(currentElement) &&
+      isElementSizeSufficient(currentElement)
+    ) {
+      return currentElement
+    }
+    currentElement = currentElement.parentElement as HTMLElement | null
+  }
+
+  return null
+}
+
 const getRootElement = () => {
   return (
     document.getElementById(ROOT_ID) ??
@@ -9,33 +47,6 @@ const getRootElement = () => {
       document.body.append(el)
       return el
     })()
-  )
-}
-
-const findClickableParentXPathSelector = (xPathSelector: string, minSize: number = 10) => {
-  const parts = xPathSelector.split('/')
-  const possibleSelectors = parts
-    .map((_, i) => i)
-    .reverse()
-    .map(i => parts.slice(0, i + 1).join('/'))
-
-  return (
-    possibleSelectors.find((selector, offset) => {
-      const reversedOffset = possibleSelectors.length - offset - 1
-      return ['a', 'button', 'summary'].some(tag => parts[reversedOffset].startsWith(tag))
-    }) ??
-    possibleSelectors.find(selector => {
-      const parentElements = findElementsByXPath(selector)
-
-      return parentElements.some(element => {
-        if (element instanceof HTMLElement) {
-          const rect = element.getBoundingClientRect()
-          return rect.width * rect.height >= minSize
-        }
-
-        return false
-      })
-    })
   )
 }
 
@@ -50,4 +61,8 @@ const findElementsByXPath = (xPathSelector: string) => {
   return result
 }
 
-export const DomService = { getRootElement, findClickableParentXPathSelector, findElementsByXPath }
+export const DomService = {
+  findElementsByXPath,
+  findVisibleClickableAndSufficientSizeParent,
+  getRootElement,
+}
