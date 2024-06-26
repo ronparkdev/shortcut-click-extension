@@ -20,6 +20,15 @@ export const showAddTargetToast = (onClose: () => void) => {
   })
 }
 
+export const showSavedToast = () => {
+  message.success({
+    className: NOTIFICATION_CLASSNAME,
+    content: 'Shortcut set successfully!',
+    key: MESSAGE_KEY,
+    duration: 1500,
+  })
+}
+
 export const cancelAddTarget = () => {
   message.destroy(MESSAGE_KEY)
 }

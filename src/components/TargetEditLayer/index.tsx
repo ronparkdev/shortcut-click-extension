@@ -52,6 +52,7 @@ export const TargetEditLayer: FC<Props> = ({
     if (hotKey !== null) {
       setTargets([...targets, { selector, url, hotKey }])
     }
+    showSavedToast()
     handleClose()
   }
 
