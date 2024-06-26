@@ -129,10 +129,24 @@ const getXPath = (element: Element): string => {
   return pathElements.join('')
 }
 
+const scrollToElement = (element: HTMLElement) => {
+  if (!element) return
+
+  const elementRect = element.getBoundingClientRect()
+  const absoluteElementTop = elementRect.top + window.scrollY
+  const middle = absoluteElementTop - window.innerHeight / 2 + elementRect.height / 2
+
+  window.scrollTo({
+    top: middle,
+    behavior: 'smooth',
+  })
+}
+
 export const DomService = {
   findElementsByXPath,
   findVisibleClickableAndSufficientSizeParent,
   getElementFromPoint,
   getRootElement,
   getXPath,
+  scrollToElement,
 }
