@@ -47,24 +47,28 @@ const TargetPopup: React.FC = () => {
   const filteredTargets = targets
     .map((target, offset) => [target, offset] as const)
     .filter(([target]) => {
-    if (target.url.endsWith('/*')) {
-      if (url.endsWith('/')) {
-        return url.startsWith(target.url.replace('/*', '/'))
+      if (target.url.endsWith('/*')) {
+        if (url.endsWith('/')) {
+          return url.startsWith(target.url.replace('/*', '/'))
+        } else {
+          return url.startsWith(target.url.replace('/*', ''))
+        }
       } else {
-        return url.startsWith(target.url.replace('/*', ''))
+        return url === target.url
       }
-    } else {
-      return url === target.url
-    }
-  })
+    })
 
   return (
     <div style={{ padding: '2px' }}>
       <Card
-        title="Config"
+        title="Current Shortcuts"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={addTarget}>
-            Add
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={addTarget}
+            title={'Click here to set a new shortcut for an item on this page.'}>
+            Add New Shortcut
           </Button>
         }>
         <List
@@ -77,6 +81,7 @@ const TargetPopup: React.FC = () => {
                   Remove
                 </Button>,
               ]}
+              style={{ backgroundColor: focusingSelector === item.selector ? 'lightblue' : undefined }}
               onMouseEnter={() => {
                 setFocusingSelector(item.selector)
               }}
@@ -87,15 +92,20 @@ const TargetPopup: React.FC = () => {
               }}>
               <List.Item.Meta
                 title={
-                  <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>{`Selector: ${item.selector}`}</div>
-                }
-                description={
                   <div
                     style={{
                       whiteSpace: 'normal',
                       wordWrap: 'break-word',
                     }}>{`URL: ${item.url} | HotKey: ${item.hotKey.key}`}</div>
+                  // <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>{`Selector: ${item.selector}`}</div>
                 }
+                // description={
+                //   <div
+                //     style={{
+                //       whiteSpace: 'normal',
+                //       wordWrap: 'break-word',
+                //     }}>{`URL: ${item.url} | HotKey: ${item.hotKey.key}`}</div>
+                // }
               />
             </List.Item>
           )}

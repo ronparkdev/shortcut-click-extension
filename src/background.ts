@@ -1,7 +1,7 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'addShortcut',
-    title: 'Add Shortcut',
+    title: 'Set Shortcut',
     contexts: ['all'],
   })
 })
