@@ -63,11 +63,10 @@ void (async () => {
 
   // Low priority functions (for setting)
 
-  const [
-    { default: getXPath },
-    { DomHighlightService },
-    { NOTIFICATION_CLASSNAME, showAddTargetToast, cancelAddTarget },
-  ] = await Promise.all([import('get-xpath'), import('services/domHighlight'), import('notification')])
+  const [{ DomHighlightService }, { NOTIFICATION_CLASSNAME, showAddTargetToast, cancelAddTarget }] = await Promise.all([
+    import('services/domHighlight'),
+    import('notification'),
+  ])
 
   ChromeStorageUtils.listen<string | null>('local', ConfigService.FOCUSING_SELECTOR, selector => {
     DomHighlightService.highlight(selector)
@@ -109,6 +108,70 @@ void (async () => {
   )
 
   DomHighlightService.injectStyle()
+
+  const getElementIndex = (element: Element): number => {
+    let index = 1
+    let sibling = element.previousElementSibling
+    while (sibling) {
+      if (sibling.tagName === element.tagName) {
+        index++
+      }
+      sibling = sibling.previousElementSibling
+    }
+    return index
+  }
+
+  // Function to escape single quotes in text for XPath
+  const escapeXPathText = (text: string): string => {
+    if (text.includes("'")) {
+      return `concat('${text.split("'").join("', \"'\", '")}')`
+    } else {
+      return `'${text}'`
+    }
+  }
+
+  // Function to get all text content of an element, including children
+  const getAllTextContent = (element: Element): string => {
+    return Array.from(element.childNodes)
+      .filter(node => node.nodeType === Node.TEXT_NODE)
+      .map(node => node.textContent?.trim() || '')
+      .join(' ')
+      .trim()
+  }
+
+  // Function to generate XPath for a given element
+  const getXPath = (element: Element): string => {
+    // Create an array to store the path components
+    const pathElements: string[] = []
+
+    let currentElement: Element | null = element
+
+    // Traverse up the tree to build the XPath
+    while (currentElement !== null) {
+      // Check if the element has an ID attribute
+      if (currentElement.id) {
+        pathElements.unshift(`//*[@id='${currentElement.id}']`)
+        break
+      } else {
+        // Find the element's position among its siblings
+        const index = getElementIndex(currentElement)
+        const tagName = currentElement.tagName.toLowerCase()
+
+        // Include the text content if the element has text
+        const text = getAllTextContent(element)
+        if (text) {
+          pathElements.unshift(`/${tagName}[${index}][contains(., ${escapeXPathText(text)})]`)
+        } else {
+          pathElements.unshift(`/${tagName}[${index}]`)
+        }
+
+        // Move to the parent element
+        currentElement = currentElement.parentElement
+      }
+    }
+
+    return pathElements.join('')
+  }
 
   const showDialog = async ({ element }: { element: Element }) => {
     const selector = getXPath(element)
