@@ -26,11 +26,11 @@ void (async () => {
     import('utils/chromeStorage'),
   ])
 
-  ChromeStorageUtils.get<TargetConfig[]>('sync', ConfigService.TARGETS_KEY, []).then(targets => {
+  ChromeStorageUtils.get<TargetConfig[]>('local', ConfigService.TARGETS_KEY, []).then(targets => {
     lastTargets = targets
   })
 
-  ChromeStorageUtils.listen<TargetConfig[]>('sync', ConfigService.TARGETS_KEY, targets => {
+  ChromeStorageUtils.listen<TargetConfig[]>('local', ConfigService.TARGETS_KEY, targets => {
     lastTargets = targets
   })
 
