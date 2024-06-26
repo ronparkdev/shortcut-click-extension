@@ -9,7 +9,6 @@
   "dependencies": {
     "@ant-design/icons": "^5.3.7",
     "antd": "^5.17.4",
-    "get-xpath": "^3.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
@@ -32,7 +31,7 @@
     "@types/chrome": "^0.0.268",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "eslint": "9.x",
+    "eslint": "8.x",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
@@ -46,7 +45,7 @@
     "rollup": "^4.18.0",
     "rollup-plugin-delete": "^2.0.0",
     "tslib": "^2.6.2",
-    "typescript": "^5.4.5",
+    "typescript": "^4.9.5",
     "typescript-eslint": "^7.11.0"
   },
   "lint-staged": {
