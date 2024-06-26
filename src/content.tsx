@@ -70,6 +70,14 @@ void (async () => {
 
   ChromeStorageUtils.listen<string | null>('local', ConfigService.FOCUSING_SELECTOR, selector => {
     DomHighlightService.highlight(selector)
+
+    if (selector !== null) {
+      const [element] = DomService.findElementsByXPath(selector)
+
+      if (element instanceof HTMLElement) {
+        DomService.scrollToElement(element)
+      }
+    }
   })
 
   document.addEventListener('mousemove', event => {
