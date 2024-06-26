@@ -1,6 +1,8 @@
-export const get = async <T>(key: string, initialValue: T): Promise<T> => {
+export type StorageType = 'sync' | 'local' | 'session'
+
+export const get = async <T>(type: StorageType, key: string, initialValue: T): Promise<T> => {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get([key], result => {
+    chrome.storage[type].get([key], result => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError)
       } else {
@@ -10,9 +12,9 @@ export const get = async <T>(key: string, initialValue: T): Promise<T> => {
   })
 }
 
-export const set = async <T>(key: string, value: T): Promise<void> => {
+export const set = async <T>(type: StorageType, key: string, value: T): Promise<void> => {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.set({ [key]: value }, () => {
+    chrome.storage[type].set({ [key]: value }, () => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError)
       } else {
@@ -22,18 +24,18 @@ export const set = async <T>(key: string, value: T): Promise<void> => {
   })
 }
 
-export const listen = <T>(key: string, callback: (newValue: T) => void): (() => void) => {
+export const listen = <T>(type: StorageType, key: string, callback: (newValue: T) => void): (() => void) => {
   const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
     if (changes[key]) {
       callback(changes[key].newValue)
     }
   }
 
-  chrome.storage.local.onChanged.addListener(handleStorageChange)
+  chrome.storage[type].onChanged.addListener(handleStorageChange)
 
   // Return a cleanup function to remove the listener
   return () => {
-    chrome.storage.local.onChanged.removeListener(handleStorageChange)
+    chrome.storage[type].onChanged.removeListener(handleStorageChange)
   }
 }
 
