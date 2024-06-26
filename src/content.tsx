@@ -69,6 +69,10 @@ void (async () => {
     { NOTIFICATION_CLASSNAME, showAddTargetToast, cancelAddTarget },
   ] = await Promise.all([import('get-xpath'), import('services/domHighlight'), import('notification')])
 
+  ChromeStorageUtils.listen<string | null>('local', ConfigService.FOCUSING_SELECTOR, selector => {
+    DomHighlightService.highlight(selector)
+  })
+
   document.addEventListener('mousemove', event => {
     if (mode === 'addTarget') {
       const element = DomService.getElementFromPoint(event.clientX, event.clientY)

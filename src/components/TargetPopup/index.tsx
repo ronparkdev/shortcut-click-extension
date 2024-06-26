@@ -1,15 +1,26 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, List, Card, message } from 'antd'
+import { useChromeStorage } from 'hooks/chromeStorage'
 import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
 import React, { useEffect } from 'react'
+import { ConfigService } from 'services/config'
 
 const TargetPopup: React.FC = () => {
   const url = useCurrentUrl()
   const [targets, setTargets] = useTargetsConfig()
+  const [focusingSelector, setFocusingSelector] = useChromeStorage<string | null>(
+    'local',
+    ConfigService.FOCUSING_SELECTOR,
+    null,
+  )
 
   useEffect(() => {
     document.body.style.width = '600px'
+
+    return () => {
+      setFocusingSelector(null)
+    }
   }, [])
 
   const removeTarget = async (offset: number) => {
@@ -63,7 +74,15 @@ const TargetPopup: React.FC = () => {
                 <Button type="link" onClick={() => removeTarget(offset)} icon={<DeleteOutlined />} key={0}>
                   Remove
                 </Button>,
-              ]}>
+              ]}
+              onMouseEnter={() => {
+                setFocusingSelector(item.selector)
+              }}
+              onMouseLeave={() => {
+                if (focusingSelector === item.selector) {
+                  setFocusingSelector(null)
+                }
+              }}>
               <List.Item.Meta
                 title={
                   <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>{`Selector: ${item.selector}`}</div>
