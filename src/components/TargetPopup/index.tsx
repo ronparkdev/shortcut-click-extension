@@ -44,7 +44,9 @@ const TargetPopup: React.FC = () => {
     })
   }
 
-  const filteredTargets = targets.filter(target => {
+  const filteredTargets = targets
+    .map((target, offset) => [target, offset] as const)
+    .filter(([target]) => {
     if (target.url.endsWith('/*')) {
       if (url.endsWith('/')) {
         return url.startsWith(target.url.replace('/*', '/'))
@@ -68,7 +70,7 @@ const TargetPopup: React.FC = () => {
         <List
           bordered
           dataSource={filteredTargets}
-          renderItem={(item, offset) => (
+          renderItem={([item, offset]) => (
             <List.Item
               actions={[
                 <Button type="link" onClick={() => removeTarget(offset)} icon={<DeleteOutlined />} key={0}>
