@@ -1,6 +1,7 @@
 import type { TargetConfig } from 'services/config'
 
 void (async () => {
+  let lastRightClick: { element: Element; date: Date } | null = null
   let lastElement: Element | null = null
   let lastTargets: TargetConfig[] = []
   let mode: 'standby' | 'addTarget' = 'standby'
@@ -12,7 +13,14 @@ void (async () => {
   document.addEventListener(
     'contextmenu',
     event => {
-      lastElement = DomService.getElementFromPoint(event.clientX, event.clientY)
+      const element = DomService.getElementFromPoint(event.clientX, event.clientY)
+      lastRightClick =
+        element !== null
+          ? {
+              element,
+              date: new Date(),
+            }
+          : null
     },
     { capture: true },
   )
@@ -159,14 +167,26 @@ void (async () => {
 
   // Listen for messages from the background script
   chrome.runtime.onMessage.addListener(request => {
+    const setAddTargetMode = () => {
+      mode = 'addTarget'
+      showAddTargetToast(() => {
+        mode = 'standby'
+        cancelAddTarget()
+      })
+    }
+
     if (request.action === 'openShortcutDialog') {
+      if (lastRightClick !== null && Math.abs(lastRightClick.date.getTime() - new Date().getTime()) < 500) {
+        lastElement = lastRightClick.element
+      }
+
       const clickableElement =
         lastElement !== null && lastElement instanceof HTMLElement
           ? DomService.findVisibleClickableAndSufficientSizeParent(lastElement)
           : null
 
       if (!clickableElement) {
-        alert('The element located at the current cursor could not be found.')
+        setAddTargetMode()
         return
       }
 
@@ -174,11 +194,7 @@ void (async () => {
     }
 
     if (request.action === 'addTarget') {
-      mode = 'addTarget'
-      showAddTargetToast(() => {
-        mode = 'standby'
-        cancelAddTarget()
-      })
+      setAddTargetMode()
     }
   })
 })()
