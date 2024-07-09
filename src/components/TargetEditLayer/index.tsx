@@ -35,6 +35,10 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
   const [isHotKeyListening, setHotKeyListening] = useState(false)
 
   useEffect(() => {
+    keyRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
     onChangeHighlight(selector)
   }, [selector])
 
@@ -84,6 +88,28 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
           label={
             <Flex vertical>
               <Text strong style={{ fontSize: '16px' }}>
+                Shortcut Key
+              </Text>
+              <Paragraph>Press the keys you want to set as a shortcut for this item.</Paragraph>
+            </Flex>
+          }
+          style={{ marginBottom: 12 }}>
+          <Button
+            ref={keyRef}
+            onFocus={() => setHotKeyListening(true)}
+            onBlur={() => setHotKeyListening(false)}
+            type={isHotKeyListening ? 'primary' : undefined}>
+            {hotKey
+              ? HotKeyService.getText(hotKey)
+              : isHotKeyListening
+                ? 'Press keys to record shortcut'
+                : 'Click here to record shortcut'}
+          </Button>
+        </Form.Item>
+        <Form.Item
+          label={
+            <Flex vertical>
+              <Text strong style={{ fontSize: '16px' }}>
                 Select Item Range
               </Text>
               <Paragraph>
@@ -122,28 +148,6 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
             onChange={setUrlPartMaxIndex}
             tooltip={{ open: false }}
           />
-        </Form.Item>
-        <Form.Item
-          label={
-            <Flex vertical>
-              <Text strong style={{ fontSize: '16px' }}>
-                Shortcut Key
-              </Text>
-              <Paragraph>Press the keys you want to set as a shortcut for this item.</Paragraph>
-            </Flex>
-          }
-          style={{ marginBottom: 12 }}>
-          <Button
-            ref={keyRef}
-            onFocus={() => setHotKeyListening(true)}
-            onBlur={() => setHotKeyListening(false)}
-            type={isHotKeyListening ? 'primary' : undefined}>
-            {hotKey
-              ? HotKeyService.getText(hotKey)
-              : isHotKeyListening
-                ? 'Press keys to record shortcut'
-                : 'Click here to record shortcut'}
-          </Button>
         </Form.Item>
       </Form>
     </Modal>
