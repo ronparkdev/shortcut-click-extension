@@ -65,6 +65,8 @@ void (async () => {
       .forEach(element => {
         if (element instanceof HTMLElement) {
           element.click()
+          DomHighlightService.highlight(element)
+          setTimeout(() => DomHighlightService.highlight(null), 300)
         }
       })
   })
