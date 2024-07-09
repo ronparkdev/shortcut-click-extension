@@ -5,6 +5,7 @@ import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
 import React, { useEffect } from 'react'
 import { ConfigService } from 'services/config'
+import { HotKeyService } from 'services/hotKey'
 
 const TargetPopup: React.FC = () => {
   const url = useCurrentUrl()
@@ -96,16 +97,15 @@ const TargetPopup: React.FC = () => {
                     style={{
                       whiteSpace: 'normal',
                       wordWrap: 'break-word',
-                    }}>{`URL: ${item.url} | HotKey: ${item.hotKey.key}`}</div>
-                  // <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>{`Selector: ${item.selector}`}</div>
+                    }}>{`URL: ${item.url}`}</div>
                 }
-                // description={
-                //   <div
-                //     style={{
-                //       whiteSpace: 'normal',
-                //       wordWrap: 'break-word',
-                //     }}>{`URL: ${item.url} | HotKey: ${item.hotKey.key}`}</div>
-                // }
+                description={
+                  <div
+                    style={{
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
+                    }}>{`HotKey: ${HotKeyService.getText(item.hotKey)}`}</div>
+                }
               />
             </List.Item>
           )}
