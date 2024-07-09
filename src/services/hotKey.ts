@@ -1,6 +1,8 @@
-export type HotKey = Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'location' | 'key'>
+export type HotKey = Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'location' | 'key' | 'code'>
 
-const HOTKEY_KEYS: (keyof HotKey)[] = ['altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'location', 'key']
+const HOTKEY_KEYS: (keyof HotKey)[] = ['altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'location', 'code']
+
+const LEGACY_HOTKEY_KEYS: (keyof HotKey)[] = ['altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'location', 'key']
 
 const parse = (event: KeyboardEvent) => {
   const { altKey, ctrlKey, metaKey, shiftKey, location, key } = event
@@ -38,7 +40,10 @@ const isValid = (hotKey: HotKey | null) => {
 }
 
 const checkIsSame = (hotKey1: HotKey, hotKey2: HotKey) => {
-  return HOTKEY_KEYS.every(key => hotKey1[key] === hotKey2[key])
+  return (
+    HOTKEY_KEYS.every(key => hotKey1[key] === hotKey2[key]) ||
+    LEGACY_HOTKEY_KEYS.every(key => hotKey1[key] === hotKey2[key])
+  )
 }
 
 export const HotKeyService = { parse, getText, isValid, checkIsSame }
