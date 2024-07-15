@@ -55,14 +55,21 @@ const getRootElement = () => {
 }
 
 const findElementsByXPath = (xPathSelector: string) => {
-  const result = []
+  try {
+    const result: Element[] = []
 
-  const nodesSnapshot = document.evaluate(xPathSelector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
-  for (let i = 0; i < nodesSnapshot.snapshotLength; i++) {
-    result.push(nodesSnapshot.snapshotItem(i))
+    const nodesSnapshot = document.evaluate(xPathSelector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
+    for (let i = 0; i < nodesSnapshot.snapshotLength; i++) {
+      const node = nodesSnapshot.snapshotItem(i)
+      if (node instanceof Element) {
+        result.push(node)
+      }
+    }
+
+    return result
+  } catch {
+    return []
   }
-
-  return result
 }
 
 const getElementIndex = (element: Element): number => {
@@ -77,7 +84,6 @@ const getElementIndex = (element: Element): number => {
   return index
 }
 
-// Function to escape single quotes in text for XPath
 const escapeXPathText = (text: string): string => {
   if (text.includes("'")) {
     return `concat('${text.split("'").join("', \"'\", '")}')`
@@ -86,47 +92,67 @@ const escapeXPathText = (text: string): string => {
   }
 }
 
-// Function to get all text content of an element, including children
-const getAllTextContent = (element: Element): string => {
-  return Array.from(element.childNodes)
+const getElementText = (element: Element): string => {
+  const children = Array.from(element.childNodes)
+
+  const text = children
     .filter(node => node.nodeType === Node.TEXT_NODE)
     .map(node => node.textContent?.trim() || '')
     .join(' ')
     .trim()
+  if (text) {
+    return text
+  }
+
+  for (const element of children.filter((node): node is Element => node instanceof Element)) {
+    const text = getElementText(element)
+    if (text) {
+      return text
+    }
+  }
+
+  return ''
 }
 
-// Function to generate XPath for a given element
-const getXPath = (element: Element): string => {
+const getXPath = (element: Element, { includeText = true }: { includeText?: boolean } = {}): string | null => {
   // Create an array to store the path components
   const pathElements: string[] = []
 
   let currentElement: Element | null = element
 
-  // Traverse up the tree to build the XPath
+  const text = getElementText(currentElement)
+  if (includeText && text) {
+    pathElements.unshift(`[contains(., ${escapeXPathText(text)})]`)
+  }
+
   while (currentElement !== null) {
-    // Check if the element has an ID attribute
     if (currentElement.id) {
       pathElements.unshift(`//*[@id='${currentElement.id}']`)
       break
     } else {
-      // Find the element's position among its siblings
       const index = getElementIndex(currentElement)
       const tagName = currentElement.tagName.toLowerCase()
 
-      // Include the text content if the element has text
-      const text = getAllTextContent(element)
-      if (text) {
-        pathElements.unshift(`/${tagName}[${index}][contains(., ${escapeXPathText(text)})]`)
-      } else {
-        pathElements.unshift(`/${tagName}[${index}]`)
-      }
+      pathElements.unshift(`/${tagName}[${index}]`)
 
-      // Move to the parent element
       currentElement = currentElement.parentElement
     }
   }
 
+  if (pathElements.length === 0) {
+    return null
+  }
+
   return pathElements.join('')
+}
+
+const getSafeXPath = (element: Element): string | null => {
+  const xPathSelector = getXPath(element, { includeText: true })
+  if (xPathSelector !== null && findElementsByXPath(xPathSelector).includes(element)) {
+    return xPathSelector
+  }
+
+  return getXPath(element, { includeText: false })
 }
 
 const scrollToElement = (element: HTMLElement) => {
@@ -148,5 +174,6 @@ export const DomService = {
   getElementFromPoint,
   getRootElement,
   getXPath,
+  getSafeXPath,
   scrollToElement,
 }

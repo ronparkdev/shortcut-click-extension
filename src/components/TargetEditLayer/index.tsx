@@ -1,30 +1,50 @@
-import { Button, Slider, Modal, Form, Typography, Flex, Mentions } from 'antd'
+import type { CollapseProps } from 'antd'
+import { Button, Slider, Modal, Typography, Collapse, Alert, Input } from 'antd'
 import { useTargetsConfig } from 'hooks/config'
 import { showSavedToast } from 'notification'
 import type { FC } from 'react'
 import React, { useEffect, useMemo, useState } from 'react'
 import Draggable from 'react-draggable'
 import { useHotkeys } from 'react-hotkeys-hook'
+import { DomService } from 'services/dom'
 import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'
 
-const { Title, Text, Paragraph } = Typography
+const { Title, Paragraph } = Typography
 
 type Props = {
-  onChangeHighlight: (xPathSelector: string | null) => void
+  onChangeHighlight: (element: Element | null) => void
   onClose: () => void
-  defaultSelector?: string
-  defaultUrl?: string
+  defaultElement: Element
+  defaultUrl: string
 }
 
-export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, defaultSelector = '', defaultUrl = '' }) => {
+export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, defaultElement, defaultUrl }) => {
   const [open, setOpen] = useState(true)
+  const [selector, setSelector] = useState<string | null>(null)
 
   const [targets, setTargets] = useTargetsConfig()
 
-  const selectors = useMemo(() => defaultSelector.split('/'), [defaultSelector])
-  const [selectorMaxIndex, setSelectorMaxIndex] = useState(Math.max(0, selectors.length))
-  const selector = selectors.slice(0, selectorMaxIndex).join('/')
+  const elements = useMemo(() => {
+    const elements: Element[] = []
+
+    let el: Element | null = defaultElement
+    while (el !== null) {
+      elements.unshift(el)
+      el = el.parentElement
+    }
+
+    return elements
+  }, [defaultElement])
+
+  const [elementIndex, setElementIndex] = useState(elements.length - 1)
+
+  const element = elements[elementIndex]
+
+  useMemo(() => {
+    setSelector(DomService.getSafeXPath(element))
+    onChangeHighlight(element)
+  }, [element])
 
   const urlParts = useMemo(() => defaultUrl.split('/'), [defaultUrl])
   const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
@@ -38,10 +58,6 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
     keyRef.current?.focus()
   }, [])
 
-  useEffect(() => {
-    onChangeHighlight(selector)
-  }, [selector])
-
   const handleClose = () => {
     onChangeHighlight(null)
     onClose()
@@ -49,7 +65,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
   }
 
   const handleSave = () => {
-    if (hotKey !== null) {
+    if (hotKey !== null && selector !== null) {
       setTargets([...targets, { selector, url, hotKey }])
     }
     showSavedToast()
@@ -61,7 +77,88 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
     setHotKey(HotKeyService.parse(event))
   })
 
-  const isValid = HotKeyService.isValid(hotKey)
+  const isSelectorValid = selector !== null && DomService.findElementsByXPath(selector).includes(element)
+  const isValid = HotKeyService.isValid(hotKey) && isSelectorValid
+
+  const items: CollapseProps['items'] = [
+    {
+      key: '1',
+      label: 'Shortcut Key',
+      children: (
+        <div>
+          <Paragraph>Press the keys you want to set as a shortcut for this item.</Paragraph>
+          <Button
+            ref={keyRef}
+            onFocus={() => setHotKeyListening(true)}
+            onBlur={() => setHotKeyListening(false)}
+            type={isHotKeyListening ? 'primary' : undefined}>
+            {hotKey
+              ? HotKeyService.getText(hotKey)
+              : isHotKeyListening
+                ? 'Press keys to record shortcut'
+                : 'Click here to record shortcut'}
+          </Button>
+        </div>
+      ),
+    },
+    {
+      key: '2',
+      label: 'Select Item',
+      children: (
+        <div>
+          <Paragraph>
+            Adjust the slider to select the specific range of the item you want to set a shortcut for.
+          </Paragraph>
+          <Slider
+            min={0}
+            max={elements.length - 1}
+            value={elementIndex}
+            onChange={setElementIndex}
+            tooltip={{ open: false }}
+          />
+        </div>
+      ),
+    },
+    {
+      key: '3',
+      label: 'URL Range',
+      children: (
+        <div>
+          <Paragraph>
+            Adjust the slider to decide if the shortcut should apply to the entire website, this specific page, or a
+            custom path.
+          </Paragraph>
+          <Input.TextArea readOnly={true} variant="filled" value={url} autoSize />
+          <Slider
+            min={2}
+            max={urlParts.length}
+            defaultValue={urlPartMaxIndex}
+            onChange={setUrlPartMaxIndex}
+            tooltip={{ open: false }}
+          />
+        </div>
+      ),
+    },
+    {
+      key: '4',
+      label: 'Advanced options',
+      children: (
+        <div>
+          <Paragraph>You can modify the XPath selector directly.</Paragraph>
+          <Input.TextArea
+            variant="outlined"
+            value={selector ?? ''}
+            autoSize
+            onChange={e => setSelector(e.target.value)}
+            status={isSelectorValid ? '' : 'error'}
+          />
+          {!isSelectorValid && (
+            <Alert description="The modified xpath does not match the element." type="error" showIcon />
+          )}
+        </div>
+      ),
+    },
+  ]
 
   return (
     <Modal
@@ -83,73 +180,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
         </Draggable>
       )}
       centered>
-      <Form layout="vertical">
-        <Form.Item
-          label={
-            <Flex vertical>
-              <Text strong style={{ fontSize: '16px' }}>
-                Shortcut Key
-              </Text>
-              <Paragraph>Press the keys you want to set as a shortcut for this item.</Paragraph>
-            </Flex>
-          }
-          style={{ marginBottom: 12 }}>
-          <Button
-            ref={keyRef}
-            onFocus={() => setHotKeyListening(true)}
-            onBlur={() => setHotKeyListening(false)}
-            type={isHotKeyListening ? 'primary' : undefined}>
-            {hotKey
-              ? HotKeyService.getText(hotKey)
-              : isHotKeyListening
-                ? 'Press keys to record shortcut'
-                : 'Click here to record shortcut'}
-          </Button>
-        </Form.Item>
-        <Form.Item
-          label={
-            <Flex vertical>
-              <Text strong style={{ fontSize: '16px' }}>
-                Select Item Range
-              </Text>
-              <Paragraph>
-                Adjust the slider to select the specific range of the item you want to set a shortcut for.
-              </Paragraph>
-            </Flex>
-          }
-          style={{ marginBottom: 12 }}>
-          {/* <Text>{selector}</Text> */}
-          <Slider
-            min={2}
-            max={selectors.length}
-            defaultValue={selectorMaxIndex}
-            onChange={setSelectorMaxIndex}
-            tooltip={{ open: false }}
-          />
-        </Form.Item>
-        <Form.Item
-          label={
-            <Flex vertical>
-              <Text strong style={{ fontSize: '16px' }}>
-                URL Range
-              </Text>
-              <Paragraph>
-                Adjust the slider to decide if the shortcut should apply to the entire website, this specific page, or a
-                custom path.
-              </Paragraph>
-            </Flex>
-          }
-          style={{ marginBottom: 12 }}>
-          <Mentions readOnly={true} variant="filled" value={url} />
-          <Slider
-            min={2}
-            max={urlParts.length}
-            defaultValue={urlPartMaxIndex}
-            onChange={setUrlPartMaxIndex}
-            tooltip={{ open: false }}
-          />
-        </Form.Item>
-      </Form>
+      <Collapse defaultActiveKey={['1', '2', '3']} items={items} />
     </Modal>
   )
 }

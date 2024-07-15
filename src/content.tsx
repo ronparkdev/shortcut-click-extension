@@ -127,19 +127,18 @@ void (async () => {
   DomHighlightService.injectStyle()
 
   const showDialog = async ({ element }: { element: Element }) => {
-    const selector = DomService.getXPath(element)
     const defaultUrl = UrlUtils.getCurrentUrl()
-    void render({ visible: true, defaultSelector: selector, defaultUrl })
+    void render({ visible: true, defaultElement: element, defaultUrl })
   }
 
   const render = async ({
     visible,
-    defaultSelector,
+    defaultElement,
     defaultUrl,
   }: {
     visible: boolean
-    defaultSelector?: string
-    defaultUrl?: string
+    defaultElement: Element
+    defaultUrl: string
   }) => {
     const [React, { createRoot }, { TargetEditLayer }] = await Promise.all([
       import('react'),
@@ -154,11 +153,11 @@ void (async () => {
       <StrictMode>
         {visible && (
           <TargetEditLayer
-            defaultSelector={defaultSelector}
+            defaultElement={defaultElement}
             defaultUrl={defaultUrl}
             onChangeHighlight={DomHighlightService.highlight}
             onClose={() => {
-              render({ visible: false })
+              render({ visible: false, defaultElement, defaultUrl })
             }}
           />
         )}
