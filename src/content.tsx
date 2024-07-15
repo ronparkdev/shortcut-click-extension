@@ -1,7 +1,7 @@
 import type { TargetConfig } from 'services/config'
 
 void (async () => {
-  let lastRightClick: { element: Element; date: Date } | null = null
+  let lastRightClick: { element: Element } | null = null
   let lastElement: Element | null = null
   let lastTargets: TargetConfig[] = []
   let mode: 'standby' | 'addTarget' = 'standby'
@@ -18,7 +18,6 @@ void (async () => {
         element !== null
           ? {
               element,
-              date: new Date(),
             }
           : null
     },
@@ -178,14 +177,14 @@ void (async () => {
     }
 
     if (request.action === 'openShortcutDialog') {
-      if (lastRightClick !== null && Math.abs(lastRightClick.date.getTime() - new Date().getTime()) < 500) {
+      if (lastRightClick !== null) {
         lastElement = lastRightClick.element
       }
 
       const clickableElement =
         lastElement !== null && lastElement instanceof HTMLElement
           ? DomService.findVisibleClickableAndSufficientSizeParent(lastElement)
-          : null
+          : lastElement
 
       if (!clickableElement) {
         setAddTargetMode()
