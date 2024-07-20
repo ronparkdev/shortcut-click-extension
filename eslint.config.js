@@ -28,6 +28,13 @@ const config = [
           alphabetize: { order: 'asc', caseInsensitive: true },
           groups: ['builtin', 'external', 'internal', 'unknown', ['parent', 'sibling', 'index']],
           pathGroupsExcludedImportTypes: ['builtin'],
+          pathGroups: [
+            {
+              pattern: '{services,hooks,utils}/**',
+              group: 'external',
+              position: 'after',
+            },
+          ],
         },
       ],
     },

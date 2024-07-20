@@ -1,11 +1,12 @@
 import type { CollapseProps } from 'antd'
 import { Button, Slider, Modal, Typography, Collapse, Alert, Input } from 'antd'
-import { useTargetsConfig } from 'hooks/config'
 import { showSavedToast } from 'notification'
 import type { FC } from 'react'
 import React, { useEffect, useMemo, useState } from 'react'
 import Draggable from 'react-draggable'
 import { useHotkeys } from 'react-hotkeys-hook'
+
+import { useTargetsConfig } from 'hooks/config'
 import { DomService } from 'services/dom'
 import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+
 import type { StorageType } from 'utils/chromeStorage'
 import { ChromeStorageUtils } from 'utils/chromeStorage'
 

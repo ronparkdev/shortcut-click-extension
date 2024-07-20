@@ -1,9 +1,10 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, List, Card, message } from 'antd'
+import React, { useEffect } from 'react'
+
 import { useChromeStorage } from 'hooks/chromeStorage'
 import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
-import React, { useEffect } from 'react'
 import { ConfigService } from 'services/config'
 import { HotKeyService } from 'services/hotKey'
 
