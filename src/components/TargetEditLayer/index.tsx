@@ -7,6 +7,7 @@ import Draggable from 'react-draggable'
 import { useHotkeys } from 'react-hotkeys-hook'
 
 import { useTargetsConfig } from 'hooks/config'
+import type { TargetConfig } from 'services/config'
 import { DomService } from 'services/dom'
 import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'
@@ -16,27 +17,28 @@ const { Title, Paragraph } = Typography
 type Props = {
   onChangeHighlight: (element: Element | null) => void
   onClose: () => void
-  defaultElement: Element
-  defaultUrl: string
+  targetElement: Element
+  targetUrl: string
+  prevTarget?: TargetConfig
 }
 
-export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, defaultElement, defaultUrl }) => {
+export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetElement, targetUrl, prevTarget }) => {
   const [open, setOpen] = useState(true)
-  const [selector, setSelector] = useState<string | null>(null)
+  const [selector, setSelector] = useState<string | null>(prevTarget?.selector ?? null)
 
   const [targets, setTargets] = useTargetsConfig()
 
   const elements = useMemo(() => {
     const elements: Element[] = []
 
-    let el: Element | null = defaultElement
+    let el: Element | null = targetElement
     while (el !== null) {
       elements.unshift(el)
       el = el.parentElement
     }
 
     return elements
-  }, [defaultElement])
+  }, [targetElement])
 
   const [elementIndex, setElementIndex] = useState(elements.length - 1)
 
@@ -47,13 +49,18 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
     onChangeHighlight(element)
   }, [element])
 
-  const urlParts = useMemo(() => defaultUrl.split('/'), [defaultUrl])
-  const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
+  const urlParts = useMemo(() => targetUrl.split('/'), [targetUrl])
+  const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(() => {
+    if (prevTarget) {
+      return prevTarget.url.split('/').length - 1
+    }
+    return urlParts.length
+  })
   const url = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
 
-  const [hotKey, setHotKey] = useState<HotKey | null>(null)
+  const [hotKey, setHotKey] = useState<HotKey | null>(prevTarget?.hotKey ?? null)
 
-  const [isHotKeyListening, setHotKeyListening] = useState(false)
+  const [isHotKeyListening, setHotKeyListening] = useState(!prevTarget?.hotKey)
 
   useEffect(() => {
     keyRef.current?.focus()
@@ -67,7 +74,24 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
 
   const handleSave = () => {
     if (hotKey !== null && selector !== null) {
-      setTargets([...targets, { selector, url, hotKey }])
+      const matchedTarget =
+        (prevTarget &&
+          targets.find(
+            target =>
+              HotKeyService.checkIsSame(prevTarget.hotKey, target.hotKey) &&
+              prevTarget.selector === target.selector &&
+              prevTarget.url === target.url,
+          )) ||
+        targets.find(
+          target =>
+            HotKeyService.checkIsSame(hotKey, target.hotKey) && selector === target.selector && url === target.url,
+        )
+
+      if (matchedTarget) {
+        setTargets([...targets.filter(target => target !== matchedTarget), { selector, url, hotKey }])
+      } else {
+        setTargets([...targets, { selector, url, hotKey }])
+      }
     }
     showSavedToast()
     handleClose()
@@ -172,7 +196,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, default
       maskClosable={false}
       title={
         <Title level={3} style={{ marginTop: 15 }}>
-          Set Shortcut for This Item
+          {prevTarget ? 'Edit' : 'Set'} Shortcut for This Element
         </Title>
       }
       modalRender={modal => (

@@ -1,4 +1,4 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, List, Card, message } from 'antd'
 import React, { useEffect } from 'react'
 
@@ -25,6 +25,24 @@ export const TargetPopup: React.FC = () => {
     }
   }, [])
 
+  const close = () => {
+    setFocusingSelector(null)
+    window.close()
+  }
+
+  const editTarget = async (offset: number) => {
+    const target = targets[offset]
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (tabs[0].id) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'editTarget', target }, response => {
+          console.log('Response from content script:', response)
+
+          close()
+        })
+      }
+    })
+  }
+
   const removeTarget = async (offset: number) => {
     try {
       await setTargets([...targets.slice(0, offset), ...targets.slice(offset + 1)])
@@ -40,7 +58,7 @@ export const TargetPopup: React.FC = () => {
         chrome.tabs.sendMessage(tabs[0].id, { action: 'addTarget' }, response => {
           console.log('Response from content script:', response)
 
-          window.close()
+          close()
         })
       }
     })
@@ -79,9 +97,8 @@ export const TargetPopup: React.FC = () => {
           renderItem={([item, offset]) => (
             <List.Item
               actions={[
-                <Button type="link" onClick={() => removeTarget(offset)} icon={<DeleteOutlined />} key={0}>
-                  Remove
-                </Button>,
+                <Button type="link" onClick={() => editTarget(offset)} icon={<EditOutlined />} key={0} />,
+                <Button type="link" onClick={() => removeTarget(offset)} icon={<DeleteOutlined />} key={1} />,
               ]}
               style={{ backgroundColor: focusingSelector === item.selector ? 'lightblue' : undefined }}
               onMouseEnter={() => {

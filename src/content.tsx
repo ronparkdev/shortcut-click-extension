@@ -126,19 +126,21 @@ void (async () => {
 
   DomHighlightService.injectStyle()
 
-  const showDialog = async ({ element }: { element: Element }) => {
-    const defaultUrl = UrlUtils.getCurrentUrl()
-    void render({ visible: true, defaultElement: element, defaultUrl })
+  const showDialog = async ({ element, prevTarget }: { element: Element; prevTarget?: TargetConfig }) => {
+    const currentUrl = UrlUtils.getCurrentUrl()
+    void render({ visible: true, targetElement: element, targetUrl: currentUrl, prevTarget })
   }
 
   const render = async ({
     visible,
-    defaultElement,
-    defaultUrl,
+    targetElement,
+    targetUrl,
+    prevTarget,
   }: {
     visible: boolean
-    defaultElement: Element
-    defaultUrl: string
+    targetElement: Element
+    targetUrl: string
+    prevTarget?: TargetConfig
   }) => {
     const [React, { createRoot }, { TargetEditLayer }] = await Promise.all([
       import('react'),
@@ -153,11 +155,12 @@ void (async () => {
       <StrictMode>
         {visible && (
           <TargetEditLayer
-            defaultElement={defaultElement}
-            defaultUrl={defaultUrl}
+            targetElement={targetElement}
+            targetUrl={targetUrl}
+            prevTarget={prevTarget}
             onChangeHighlight={DomHighlightService.highlight}
             onClose={() => {
-              render({ visible: false, defaultElement, defaultUrl })
+              render({ visible: false, targetElement, targetUrl })
             }}
           />
         )}
@@ -191,6 +194,20 @@ void (async () => {
       }
 
       showDialog({ element: clickableElement })
+    }
+
+    if (request.action === 'editTarget') {
+      const target = request.target as TargetConfig
+      const [element] = DomService.findElementsByXPath(target.selector)
+
+      if (!element) {
+        alert('No such element was found on this page.')
+        return
+      }
+
+      DomHighlightService.highlight(element)
+
+      showDialog({ element, prevTarget: target })
     }
 
     if (request.action === 'addTarget') {
