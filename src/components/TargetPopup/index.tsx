@@ -8,7 +8,7 @@ import useCurrentUrl from 'hooks/currentUrl'
 import { ConfigService } from 'services/config'
 import { HotKeyService } from 'services/hotKey'
 
-const TargetPopup: React.FC = () => {
+export const TargetPopup: React.FC = () => {
   const url = useCurrentUrl()
   const [targets, setTargets] = useTargetsConfig()
   const [focusingSelector, setFocusingSelector] = useChromeStorage<string | null>(
@@ -115,5 +115,3 @@ const TargetPopup: React.FC = () => {
     </div>
   )
 }
-
-export { TargetPopup as CurrentTargetPopup }

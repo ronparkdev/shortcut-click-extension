@@ -1,5 +1,5 @@
 void (async () => {
-  const [React, { createRoot }, { DomService }, { CurrentTargetPopup }] = await Promise.all([
+  const [React, { createRoot }, { DomService }, { TargetPopup }] = await Promise.all([
     import('react'),
     import('react-dom/client'),
     import('services/dom'),
@@ -11,7 +11,7 @@ void (async () => {
 
   root.render(
     <StrictMode>
-      <CurrentTargetPopup />
+      <TargetPopup />
     </StrictMode>,
   )
 })()
