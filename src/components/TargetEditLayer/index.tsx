@@ -102,8 +102,18 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
     setHotKey(HotKeyService.parse(event))
   })
 
-  const isSelectorValid = selector !== null && DomService.findElementsByXPath(selector).includes(element)
-  const isValid = HotKeyService.isValid(hotKey) && isSelectorValid
+  const selectorState = (() => {
+    try {
+      if (selector === null) {
+        return 'invalid'
+      }
+
+      return DomService.findElementsByXPath(selector).includes(element) ? 'valid' : 'elementNotIncluded'
+    } catch {
+      return 'invalid'
+    }
+  })()
+  const isValid = HotKeyService.isValid(hotKey) && selectorState === 'valid'
 
   const items: CollapseProps['items'] = [
     {
@@ -175,10 +185,19 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
             value={selector ?? ''}
             autoSize
             onChange={e => setSelector(e.target.value)}
-            status={isSelectorValid ? '' : 'error'}
+            status={selectorState === 'valid' ? '' : 'error'}
           />
-          {!isSelectorValid && (
-            <Alert description="The modified xpath does not match the element." type="error" showIcon />
+          {selectorState !== 'valid' && (
+            <Alert
+              style={{ marginTop: 8 }}
+              description={
+                selectorState === 'elementNotIncluded'
+                  ? 'The modified xpath does not match the element'
+                  : 'There was an error in the xpath selector'
+              }
+              type="error"
+              showIcon
+            />
           )}
         </div>
       ),

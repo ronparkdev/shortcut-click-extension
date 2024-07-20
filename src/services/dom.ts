@@ -55,21 +55,17 @@ const getRootElement = () => {
 }
 
 const findElementsByXPath = (xPathSelector: string) => {
-  try {
-    const result: Element[] = []
+  const result: Element[] = []
 
-    const nodesSnapshot = document.evaluate(xPathSelector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
-    for (let i = 0; i < nodesSnapshot.snapshotLength; i++) {
-      const node = nodesSnapshot.snapshotItem(i)
-      if (node instanceof Element) {
-        result.push(node)
-      }
+  const nodesSnapshot = document.evaluate(xPathSelector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
+  for (let i = 0; i < nodesSnapshot.snapshotLength; i++) {
+    const node = nodesSnapshot.snapshotItem(i)
+    if (node instanceof Element) {
+      result.push(node)
     }
-
-    return result
-  } catch {
-    return []
   }
+
+  return result
 }
 
 const getElementIndex = (element: Element): number => {
@@ -148,8 +144,12 @@ const getXPath = (element: Element, { includeText = true }: { includeText?: bool
 
 const getSafeXPath = (element: Element): string | null => {
   const xPathSelector = getXPath(element, { includeText: true })
-  if (xPathSelector !== null && findElementsByXPath(xPathSelector).includes(element)) {
-    return xPathSelector
+  try {
+    if (xPathSelector !== null && findElementsByXPath(xPathSelector).includes(element)) {
+      return xPathSelector
+    }
+  } catch {
+    // Ignore
   }
 
   return getXPath(element, { includeText: false })
