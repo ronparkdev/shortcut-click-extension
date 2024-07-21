@@ -8,4 +8,8 @@ const useTargetsConfig = () => {
   return useChromeStorage<TargetConfig[]>('local', ConfigService.TARGETS_KEY, DEFAULT_TARGETS)
 }
 
-export { useTargetsConfig }
+const useLastUsedUrlPattern = () => {
+  return useChromeStorage<string | null>('local', ConfigService.LAST_USED_URL_PATTERN, null)
+}
+
+export { useTargetsConfig, useLastUsedUrlPattern }

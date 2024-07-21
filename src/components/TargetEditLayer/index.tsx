@@ -6,11 +6,12 @@ import React, { useEffect, useMemo, useState } from 'react'
 import Draggable from 'react-draggable'
 import { useHotkeys } from 'react-hotkeys-hook'
 
-import { useTargetsConfig } from 'hooks/config'
+import { useLastUsedUrlPattern, useTargetsConfig } from 'hooks/config'
 import type { TargetConfig } from 'services/config'
 import { DomService } from 'services/dom'
 import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'
+import { UrlUtils } from 'utils/url'
 
 const { Title, Paragraph } = Typography
 
@@ -27,6 +28,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [selector, setSelector] = useState<string | null>(prevTarget?.selector ?? null)
 
   const [targets, setTargets] = useTargetsConfig()
+  const [lastUsedUrlPattern, setLastUsedUrlPattern] = useLastUsedUrlPattern()
 
   const elements = useMemo(() => {
     const elements: Element[] = []
@@ -50,13 +52,8 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   }, [element])
 
   const urlParts = useMemo(() => targetUrl.split('/'), [targetUrl])
-  const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(() => {
-    if (prevTarget) {
-      return prevTarget.url.split('/').length - 1
-    }
-    return urlParts.length
-  })
-  const url = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
+  const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
+  const urlPattern = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
 
   const [hotKey, setHotKey] = useState<HotKey | null>(prevTarget?.hotKey ?? null)
 
@@ -65,6 +62,23 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   useEffect(() => {
     keyRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    const urlPartMaxIndex = (() => {
+      if (prevTarget) {
+        return prevTarget.url.split('/').length - 1
+      }
+      if (lastUsedUrlPattern && UrlUtils.checkIsMatchedUrl(lastUsedUrlPattern, targetUrl)) {
+        console.log('boom!')
+        return lastUsedUrlPattern.split('/').length - 1
+      }
+      return urlParts.length
+    })()
+
+    console.log({ urlPartMaxIndex, lastUsedUrlPattern })
+
+    setUrlPartMaxIndex(urlPartMaxIndex)
+  }, [lastUsedUrlPattern])
 
   const handleClose = () => {
     onChangeHighlight(null)
@@ -84,15 +98,18 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
           )) ||
         targets.find(
           target =>
-            HotKeyService.checkIsSame(hotKey, target.hotKey) && selector === target.selector && url === target.url,
+            HotKeyService.checkIsSame(hotKey, target.hotKey) &&
+            selector === target.selector &&
+            urlPattern === target.url,
         )
 
       if (matchedTarget) {
-        setTargets([...targets.filter(target => target !== matchedTarget), { selector, url, hotKey }])
+        setTargets([...targets.filter(target => target !== matchedTarget), { selector, url: urlPattern, hotKey }])
       } else {
-        setTargets([...targets, { selector, url, hotKey }])
+        setTargets([...targets, { selector, url: urlPattern, hotKey }])
       }
     }
+    setLastUsedUrlPattern(urlPattern)
     showSavedToast()
     handleClose()
   }
@@ -163,11 +180,11 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
             Adjust the slider to decide if the shortcut should apply to the entire website, this specific page, or a
             custom path.
           </Paragraph>
-          <Input.TextArea readOnly={true} variant="filled" value={url} autoSize />
+          <Input.TextArea readOnly={true} variant="filled" value={urlPattern} autoSize />
           <Slider
             min={2}
             max={urlParts.length}
-            defaultValue={urlPartMaxIndex}
+            value={urlPartMaxIndex}
             onChange={setUrlPartMaxIndex}
             tooltip={{ open: false }}
           />

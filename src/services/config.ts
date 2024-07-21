@@ -6,4 +6,8 @@ export type TargetConfig = {
   hotKey: HotKey
 }
 
-export const ConfigService = { TARGETS_KEY: 'targets', FOCUSING_SELECTOR: 'focusingSelector' }
+export const ConfigService = {
+  TARGETS_KEY: 'targets',
+  FOCUSING_SELECTOR: 'focusingSelector',
+  LAST_USED_URL_PATTERN: 'lastUsedUrlPattern',
+}
