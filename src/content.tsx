@@ -46,17 +46,7 @@ void (async () => {
     const hotKey = HotKeyService.parse(event)
 
     const hitTargets = lastTargets
-      .filter(target => {
-        if (target.url.endsWith('/*')) {
-          if (url.endsWith('/')) {
-            return url.startsWith(target.url.replace('/*', '/'))
-          } else {
-            return url.startsWith(target.url.replace('/*', ''))
-          }
-        } else {
-          return url === target.url
-        }
-      })
+      .filter(target => UrlUtils.checkIsMatchedUrl(target.url, url))
       .filter(target => HotKeyService.checkIsSame(hotKey, target.hotKey))
 
     hitTargets

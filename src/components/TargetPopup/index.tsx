@@ -7,6 +7,7 @@ import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
 import { ConfigService } from 'services/config'
 import { HotKeyService } from 'services/hotKey'
+import { UrlUtils } from 'utils/url'
 
 export const TargetPopup: React.FC = () => {
   const url = useCurrentUrl()
@@ -66,17 +67,7 @@ export const TargetPopup: React.FC = () => {
 
   const filteredTargets = targets
     .map((target, offset) => [target, offset] as const)
-    .filter(([target]) => {
-      if (target.url.endsWith('/*')) {
-        if (url.endsWith('/')) {
-          return url.startsWith(target.url.replace('/*', '/'))
-        } else {
-          return url.startsWith(target.url.replace('/*', ''))
-        }
-      } else {
-        return url === target.url
-      }
-    })
+    .filter(([target]) => UrlUtils.checkIsMatchedUrl(target.url, url))
 
   return (
     <div style={{ padding: '2px' }}>
