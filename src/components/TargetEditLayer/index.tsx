@@ -2,7 +2,7 @@ import type { CollapseProps } from 'antd'
 import { Button, Slider, Modal, Typography, Collapse, Alert, Input } from 'antd'
 import { showSavedToast } from 'notification'
 import type { FC } from 'react'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Draggable from 'react-draggable'
 import { useHotkeys } from 'react-hotkeys-hook'
 
@@ -24,8 +24,10 @@ type Props = {
 }
 
 export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetElement, targetUrl, prevTarget }) => {
+  const isFirstSelectorRef = useRef(true)
+
   const [open, setOpen] = useState(true)
-  const [selector, setSelector] = useState<string | null>(prevTarget?.selector ?? null)
+  const [selector, setSelector] = useState<string | null>(null)
 
   const [targets, setTargets] = useTargetsConfig()
   const [lastUsedUrlPattern, setLastUsedUrlPattern] = useLastUsedUrlPattern()
@@ -46,8 +48,13 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
 
   const element = elements[elementIndex]
 
-  useMemo(() => {
-    setSelector(DomService.getSafeXPath(element))
+  useEffect(() => {
+    if (isFirstSelectorRef.current && prevTarget) {
+      setSelector(prevTarget.selector)
+    } else {
+      setSelector(DomService.getSafeXPath(element))
+    }
+    isFirstSelectorRef.current = false
     onChangeHighlight(element)
   }, [element])
 
