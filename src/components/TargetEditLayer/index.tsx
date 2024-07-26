@@ -1,6 +1,5 @@
 import type { CollapseProps } from 'antd'
 import { Button, Slider, Modal, Typography, Collapse, Alert, Input } from 'antd'
-import { showSavedToast } from 'notification'
 import type { FC } from 'react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Draggable from 'react-draggable'
@@ -11,6 +10,7 @@ import type { TargetConfig } from 'services/config'
 import { DomService } from 'services/dom'
 import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'
+import { ToastService } from 'services/toast'
 import { UrlUtils } from 'utils/url'
 
 const { Title, Paragraph } = Typography
@@ -117,7 +117,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
       }
     }
     setLastUsedUrlPattern(urlPattern)
-    showSavedToast()
+    ToastService.showSavedToast()
     handleClose()
   }
 

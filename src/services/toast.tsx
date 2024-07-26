@@ -2,11 +2,11 @@ import { CloseCircleOutlined } from '@ant-design/icons'
 import { Button, message } from 'antd'
 import React from 'react'
 
-export const NOTIFICATION_CLASSNAME = '__shortclick_extension_notification__'
+const NOTIFICATION_CLASSNAME = '__shortclick_extension_notification__'
 
 const MESSAGE_KEY = 'addTarget'
 
-export const showAddTargetToast = (onClose: () => void) => {
+const showAddTargetToast = (onClose: () => void) => {
   message.open({
     className: NOTIFICATION_CLASSNAME,
     content: (
@@ -20,7 +20,7 @@ export const showAddTargetToast = (onClose: () => void) => {
   })
 }
 
-export const showSavedToast = () => {
+const showSavedToast = () => {
   message.success({
     className: NOTIFICATION_CLASSNAME,
     content: 'Shortcut set successfully!',
@@ -29,6 +29,8 @@ export const showSavedToast = () => {
   })
 }
 
-export const cancelAddTarget = () => {
+const cancelAddTarget = () => {
   message.destroy(MESSAGE_KEY)
 }
+
+export const ToastService = { NOTIFICATION_CLASSNAME, showAddTargetToast, showSavedToast, cancelAddTarget }

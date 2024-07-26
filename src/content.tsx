@@ -62,9 +62,9 @@ void (async () => {
 
   // Low priority functions (for setting)
 
-  const [{ DomHighlightService }, { NOTIFICATION_CLASSNAME, showAddTargetToast, cancelAddTarget }] = await Promise.all([
+  const [{ DomHighlightService }, { ToastService }] = await Promise.all([
     import('services/domHighlight'),
-    import('notification'),
+    import('services/toast'),
   ])
 
   ChromeStorageUtils.listen<string | null>('local', ConfigService.FOCUSING_SELECTOR, selector => {
@@ -85,7 +85,7 @@ void (async () => {
 
       let clickableElement = element !== null ? DomService.findVisibleClickableAndSufficientSizeParent(element) : null
 
-      if (clickableElement?.closest(`.${NOTIFICATION_CLASSNAME}`)) {
+      if (clickableElement?.closest(`.${ToastService.NOTIFICATION_CLASSNAME}`)) {
         clickableElement = null
       }
 
@@ -106,7 +106,7 @@ void (async () => {
           showDialog({ element: lastElement })
         }
 
-        cancelAddTarget()
+        ToastService.cancelAddTarget()
 
         mode = 'standby'
       }
@@ -162,9 +162,9 @@ void (async () => {
   chrome.runtime.onMessage.addListener(request => {
     const setAddTargetMode = () => {
       mode = 'addTarget'
-      showAddTargetToast(() => {
+      ToastService.showAddTargetToast(() => {
         mode = 'standby'
-        cancelAddTarget()
+        ToastService.cancelAddTarget()
       })
     }
 
