@@ -1,9 +1,13 @@
 import type { HotKey } from 'services/hotKey'
 
-export type TargetConfig = {
+export type SavedTargetConfig = {
   selector: string
   url: string
   hotKey: HotKey
+}
+
+export type TargetConfig = SavedTargetConfig & {
+  location: 'local' | 'sync'
 }
 
 export const ConfigService = {

@@ -110,10 +110,15 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
             urlPattern === target.url,
         )
 
+      const location = matchedTarget?.location ?? 'local'
+
       if (matchedTarget) {
-        setTargets([...targets.filter(target => target !== matchedTarget), { selector, url: urlPattern, hotKey }])
+        setTargets([
+          ...targets.filter(target => target !== matchedTarget),
+          { selector, url: urlPattern, hotKey, location },
+        ])
       } else {
-        setTargets([...targets, { selector, url: urlPattern, hotKey }])
+        setTargets([...targets, { selector, url: urlPattern, hotKey, location }])
       }
     }
     setLastUsedUrlPattern(urlPattern)
