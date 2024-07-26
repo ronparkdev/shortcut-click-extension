@@ -8,12 +8,12 @@ void (async () => {
 
   // Top priority functions (for save mouse position for contextmenu)
 
-  const [{ DomService }] = await Promise.all([import('services/dom')])
+  const [{ DomUtils }] = await Promise.all([import('utils/dom')])
 
   document.addEventListener(
     'contextmenu',
     event => {
-      const element = DomService.getElementFromPoint(event.clientX, event.clientY)
+      const element = DomUtils.getElementFromPoint(event.clientX, event.clientY)
       lastRightClick =
         element !== null
           ? {
@@ -50,7 +50,7 @@ void (async () => {
       .filter(target => HotKeyService.checkIsSame(hotKey, target.hotKey))
 
     hitTargets
-      .flatMap(target => DomService.findElementsByXPath(target.selector))
+      .flatMap(target => DomUtils.findElementsByXPath(target.selector))
       .forEach(element => {
         if (element instanceof HTMLElement) {
           element.click()
@@ -71,19 +71,19 @@ void (async () => {
     DomHighlightService.highlight(selector)
 
     if (selector !== null) {
-      const [element] = DomService.findElementsByXPath(selector)
+      const [element] = DomUtils.findElementsByXPath(selector)
 
       if (element instanceof HTMLElement) {
-        DomService.scrollToElement(element)
+        DomUtils.scrollToElement(element)
       }
     }
   })
 
   document.addEventListener('mousemove', event => {
     if (mode === 'addTarget') {
-      const element = DomService.getElementFromPoint(event.clientX, event.clientY)
+      const element = DomUtils.getElementFromPoint(event.clientX, event.clientY)
 
-      let clickableElement = element !== null ? DomService.findVisibleClickableAndSufficientSizeParent(element) : null
+      let clickableElement = element !== null ? DomUtils.findVisibleClickableAndSufficientSizeParent(element) : null
 
       if (clickableElement?.closest(`.${ToastService.NOTIFICATION_CLASSNAME}`)) {
         clickableElement = null
@@ -138,7 +138,7 @@ void (async () => {
       import('components/TargetEditLayer'),
     ])
 
-    const root = createRoot(DomService.getRootElement())
+    const root = createRoot(DomUtils.getRootElement())
     const { StrictMode } = React
 
     root.render(
@@ -175,7 +175,7 @@ void (async () => {
 
       const clickableElement =
         lastElement !== null && lastElement instanceof HTMLElement
-          ? DomService.findVisibleClickableAndSufficientSizeParent(lastElement)
+          ? DomUtils.findVisibleClickableAndSufficientSizeParent(lastElement)
           : lastElement
 
       if (!clickableElement) {
@@ -188,7 +188,7 @@ void (async () => {
 
     if (request.action === 'editTarget') {
       const target = request.target as TargetConfig
-      const [element] = DomService.findElementsByXPath(target.selector)
+      const [element] = DomUtils.findElementsByXPath(target.selector)
 
       if (!element) {
         alert('No such element was found on this page.')

@@ -168,7 +168,7 @@ const scrollToElement = (element: HTMLElement) => {
   })
 }
 
-export const DomService = {
+export const DomUtils = {
   findElementsByXPath,
   findVisibleClickableAndSufficientSizeParent,
   getElementFromPoint,

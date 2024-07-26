@@ -1,4 +1,4 @@
-import { DomService } from './dom'
+import { DomUtils } from 'utils/dom'
 
 const highlight = (target: string | Element | null) => {
   // Remove any existing highlights
@@ -8,9 +8,7 @@ const highlight = (target: string | Element | null) => {
     if (target instanceof Element) {
       target.classList.add('element-highlight')
     } else {
-      DomService.findElementsByXPath(target).forEach(
-        el => el instanceof Element && el.classList.add('element-highlight'),
-      )
+      DomUtils.findElementsByXPath(target).forEach(el => el instanceof Element && el.classList.add('element-highlight'))
     }
   }
 }

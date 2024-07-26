@@ -7,10 +7,10 @@ import { useHotkeys } from 'react-hotkeys-hook'
 
 import { useLastUsedUrlPattern, useTargetsConfig } from 'hooks/config'
 import type { TargetConfig } from 'services/config'
-import { DomService } from 'services/dom'
 import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'
 import { ToastService } from 'services/toast'
+import { DomUtils } from 'utils/dom'
 import { UrlUtils } from 'utils/url'
 
 const { Title, Paragraph } = Typography
@@ -52,7 +52,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
     if (isFirstSelectorRef.current && prevTarget) {
       setSelector(prevTarget.selector)
     } else {
-      setSelector(DomService.getSafeXPath(element))
+      setSelector(DomUtils.getSafeXPath(element))
     }
     isFirstSelectorRef.current = false
     onChangeHighlight(element)
@@ -132,7 +132,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
         return 'invalid'
       }
 
-      return DomService.findElementsByXPath(selector).includes(element) ? 'valid' : 'elementNotIncluded'
+      return DomUtils.findElementsByXPath(selector).includes(element) ? 'valid' : 'elementNotIncluded'
     } catch {
       return 'invalid'
     }
