@@ -106,7 +106,9 @@ export const TargetPopup: React.FC = () => {
                     style={{
                       whiteSpace: 'normal',
                       wordWrap: 'break-word',
-                    }}>{`URL: ${item.url}`}</div>
+                    }}>
+                    {item.location === 'sync' ? <CloudServerOutlined /> : <DesktopOutlined />} {item.url}
+                  </div>
                 }
                 description={
                   <div
