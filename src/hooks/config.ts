@@ -21,23 +21,28 @@ const useTargetsConfig = () => {
 
   const configs = useMemo(
     (): TargetConfig[] => [
-      ...localConfigs.map(config => ({ ...config, location: 'local' as const })),
       ...syncConfigs.map(config => ({ ...config, location: 'sync' as const })),
+      ...localConfigs.map(config => ({ ...config, location: 'local' as const })),
     ],
     [localConfigs, syncConfigs],
   )
 
-  const setConfigs = useCallback(async (configs: TargetConfig[]) => {
-    const localConfigs = configs
-      .filter(({ location }) => location === 'local')
-      .filter(({ selector, hotKey, url }) => ({ selector, hotKey, url }))
+  const setConfigs = useCallback(
+    async (newConfigs: TargetConfig[]) => {
+      const localConfigs = newConfigs
+        .filter(({ location }) => location === 'local')
+        .filter(({ selector, hotKey, url }) => ({ selector, hotKey, url }))
 
-    const syncConfigs = configs
-      .filter(({ location }) => location === 'sync')
-      .filter(({ selector, hotKey, url }) => ({ selector, hotKey, url }))
+      const syncConfigs = newConfigs
+        .filter(({ location }) => location === 'sync')
+        .filter(({ selector, hotKey, url }) => ({ selector, hotKey, url }))
 
-    await Promise.all([setLocalConfigs(localConfigs), setSyncConfigs(syncConfigs)])
-  }, [])
+      // Try failable sync config first
+      await setSyncConfigs(syncConfigs)
+      await setLocalConfigs(localConfigs)
+    },
+    [setLocalConfigs, setSyncConfigs],
+  )
 
   return [configs, setConfigs] as const
 }

@@ -15,14 +15,20 @@ const useChromeStorage = <T>(type: StorageType, key: string, initialValue: T) =>
     }
   }, [key, initialValue])
 
-  const setValue = async (value: T) => {
-    try {
+  const setValue = useCallback(
+    async (value: T, { force = false }: { force?: boolean } = {}) => {
+      const isSameValue = JSON.stringify(storedValue) === JSON.stringify(value)
+
+      if (isSameValue && !force) {
+        console.log('skipped by same value', { type, key, storedValue, value, force })
+        return
+      }
+
       await ChromeStorageUtils.set<T>(type, key, value)
       setStoredValue(value)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+    },
+    [storedValue],
+  )
 
   useEffect(() => {
     getStoredValue()
