@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { CloudServerOutlined, DeleteOutlined, DesktopOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, List, Card, message } from 'antd'
 import React, { useEffect } from 'react'
 
@@ -44,6 +44,10 @@ export const TargetPopup: React.FC = () => {
     })
   }
 
+  const openOptions = () => {
+    chrome.runtime.openOptionsPage()
+  }
+
   const removeTarget = async (offset: number) => {
     try {
       await setTargets([...targets.slice(0, offset), ...targets.slice(offset + 1)])
@@ -72,14 +76,14 @@ export const TargetPopup: React.FC = () => {
   return (
     <div style={{ padding: '2px' }}>
       <Card
-        title="Current Shortcuts"
+        title="Shortcuts for this Page"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={addTarget}
             title={'Click here to set a new shortcut for an item on this page.'}>
-            Add New Shortcut
+            Add
           </Button>
         }>
         <List
@@ -121,6 +125,9 @@ export const TargetPopup: React.FC = () => {
             </List.Item>
           )}
         />
+        <Button onClick={openOptions} style={{ width: '100%', marginTop: 8 }}>
+          View all shortcuts
+        </Button>
       </Card>
     </div>
   )
