@@ -10,7 +10,7 @@ import del from 'rollup-plugin-delete'
 
 export default [
   defineConfig({
-    input: ['./src/background.ts', './src/content.tsx', './src/popup.tsx'],
+    input: ['./src/background.ts', './src/content.tsx', './src/popup.tsx', './src/options.tsx'],
     output: {
       dir: 'dist',
       format: 'esm',

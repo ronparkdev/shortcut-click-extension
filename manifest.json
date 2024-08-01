@@ -34,5 +34,6 @@
       "resources": ["dist/*.js", "dist/chunks/*.js"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "options_page": "public/options.html"
 }
