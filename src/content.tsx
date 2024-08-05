@@ -1,3 +1,5 @@
+import type { Root } from 'react-dom/client'
+
 import type { TargetConfig } from 'services/config'
 
 void (async () => {
@@ -121,6 +123,8 @@ void (async () => {
     void render({ visible: true, targetElement: element, targetUrl: currentUrl, prevTarget })
   }
 
+  let currentRoot: Root | null = null
+
   const render = async ({
     visible,
     targetElement,
@@ -138,7 +142,7 @@ void (async () => {
       import('components/TargetEditLayer'),
     ])
 
-    const root = createRoot(DomUtils.getRootElement())
+    const root = (currentRoot = currentRoot ?? createRoot(DomUtils.getRootElement()))
     const { StrictMode } = React
 
     root.render(
