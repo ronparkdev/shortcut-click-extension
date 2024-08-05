@@ -11,6 +11,7 @@ import type { HotKey } from 'services/hotKey'
 import { HotKeyService } from 'services/hotKey'
 import { ToastService } from 'services/toast'
 import { DomUtils } from 'utils/dom'
+import { isDevelopment } from 'utils/env'
 import { UrlUtils } from 'utils/url'
 
 const { Title, Text } = Typography
@@ -168,6 +169,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
       maskClosable={false}
       title={
         <Title level={4} style={{ marginTop: 15, marginBottom: 25 }}>
+          {isDevelopment ? '[D]' : ''}
           {prevTarget ? 'Edit' : 'Set'} Shortcut for This Element
         </Title>
       }

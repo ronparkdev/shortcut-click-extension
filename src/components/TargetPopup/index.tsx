@@ -7,6 +7,7 @@ import { useTargetsConfig } from 'hooks/config'
 import useCurrentUrl from 'hooks/currentUrl'
 import { ConfigService } from 'services/config'
 import { HotKeyService } from 'services/hotKey'
+import { isDevelopment } from 'utils/env'
 import { UrlUtils } from 'utils/url'
 
 export const TargetPopup: React.FC = () => {
@@ -76,7 +77,7 @@ export const TargetPopup: React.FC = () => {
   return (
     <div style={{ padding: '2px' }}>
       <Card
-        title="Shortcuts for this Page"
+        title={`${isDevelopment ? '[D]' : ''}Shortcuts for this Page`}
         extra={
           <Button
             type="primary"
