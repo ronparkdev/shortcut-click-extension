@@ -1,7 +1,7 @@
 import { CloudServerOutlined, DesktopOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { Button, Slider, Modal, Typography, Alert, Input, Radio, Tooltip, Flex, Switch, Form, Space } from 'antd'
 import type { FC } from 'react'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import Draggable from 'react-draggable'
 import { useHotkeys } from 'react-hotkeys-hook'
 
@@ -25,10 +25,8 @@ type Props = {
 }
 
 export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetElement, targetUrl, prevTarget }) => {
-  const isFirstSelectorRef = useRef(true)
-
   const [open, setOpen] = useState(true)
-  const [selector, setSelector] = useState<string | null>(null)
+  const [selector, setSelector] = useState<string | null>(prevTarget?.selector ?? null)
 
   const [isFocusedInput, setFocusedInput] = useState(false)
   const [targets, setTargets] = useTargetsConfig()
@@ -48,18 +46,6 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
 
   const [elementIndex, setElementIndex] = useState(elements.length - 1)
 
-  const element = elements[elementIndex]
-
-  useEffect(() => {
-    if (isFirstSelectorRef.current && prevTarget) {
-      setSelector(prevTarget.selector)
-    } else {
-      setSelector(DomUtils.getSafeXPath(element))
-    }
-    isFirstSelectorRef.current = false
-    onChangeHighlight(element)
-  }, [element])
-
   const urlParts = useMemo(() => targetUrl.split('/'), [targetUrl])
   const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
   const urlPattern = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
@@ -70,6 +56,16 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [isHotKeyListening, setHotKeyListening] = useState(!prevTarget?.hotKey)
   const [isVisibleAdvancedOptions, setVisibleAdvancedOptions] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  const handleChangeSlider = (index: number) => {
+    setElementIndex(index)
+
+    setSelector(DomUtils.getSafeXPath(elements[elementIndex]))
+  }
+
+  useLayoutEffect(() => {
+    onChangeHighlight(elements[elementIndex])
+  }, [elementIndex])
 
   useEffect(() => {
     keyRef.current?.focus()
@@ -85,8 +81,6 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
       }
       return urlParts.length
     })()
-
-    console.log({ urlPartMaxIndex, lastUsedUrlPattern })
 
     setUrlPartMaxIndex(urlPartMaxIndex)
   }, [lastUsedUrlPattern])
@@ -152,7 +146,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
         return 'invalid'
       }
 
-      return DomUtils.findElementsByXPath(selector).includes(element) ? 'valid' : 'elementNotIncluded'
+      return DomUtils.findElementsByXPath(selector).includes(elements[elementIndex]) ? 'valid' : 'elementNotIncluded'
     } catch {
       return 'invalid'
     }
@@ -220,7 +214,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
             max={elements.length - 1}
             value={elementIndex}
             defaultValue={elementIndex}
-            onChange={setElementIndex}
+            onChange={handleChangeSlider}
             tooltip={{ open: false }}
           />
         </Form.Item>
