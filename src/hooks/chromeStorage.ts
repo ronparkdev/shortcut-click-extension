@@ -20,7 +20,7 @@ const useChromeStorage = <T>(type: StorageType, key: string, initialValue: T) =>
       const isSameValue = JSON.stringify(storedValue) === JSON.stringify(value)
 
       if (isSameValue && !force) {
-        console.log('skipped by same value', { type, key, storedValue, value, force })
+        // console.log('skipped by same value', { type, key, storedValue, value, force })
         return
       }
 
