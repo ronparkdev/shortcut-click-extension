@@ -30,6 +30,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [open, setOpen] = useState(true)
   const [selector, setSelector] = useState<string | null>(null)
 
+  const [isFocusedInput, setFocusedInput] = useState(false)
   const [targets, setTargets] = useTargetsConfig()
   const [lastUsedUrlPattern, setLastUsedUrlPattern] = useLastUsedUrlPattern()
 
@@ -174,7 +175,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
         </Title>
       }
       modalRender={modal => (
-        <Draggable>
+        <Draggable disabled={isFocusedInput}>
           <div style={{ cursor: 'move' }}>{modal}</div>
         </Draggable>
       )}
@@ -287,6 +288,8 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
                   variant="outlined"
                   value={selector ?? ''}
                   autoSize
+                  onFocus={() => setFocusedInput(true)}
+                  onBlur={() => setFocusedInput(false)}
                   onChange={e => setSelector(e.target.value)}
                   status={selectorState === 'valid' ? '' : 'error'}
                 />
