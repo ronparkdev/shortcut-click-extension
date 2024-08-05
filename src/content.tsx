@@ -5,7 +5,8 @@ import type { TargetConfig } from 'services/config'
 void (async () => {
   let lastRightClick: { element: Element } | null = null
   let lastElement: Element | null = null
-  let lastTargets: TargetConfig[] = []
+  let lastLocalTargets: TargetConfig[] = []
+  let lastSyncTargets: TargetConfig[] = []
   let mode: 'standby' | 'addTarget' = 'standby'
 
   // Top priority functions (for save mouse position for contextmenu)
@@ -36,18 +37,26 @@ void (async () => {
   ])
 
   ChromeStorageUtils.get<TargetConfig[]>('local', ConfigService.TARGETS_KEY, []).then(targets => {
-    lastTargets = targets
+    lastLocalTargets = targets
   })
 
   ChromeStorageUtils.listen<TargetConfig[]>('local', ConfigService.TARGETS_KEY, targets => {
-    lastTargets = targets
+    lastLocalTargets = targets
+  })
+
+  ChromeStorageUtils.get<TargetConfig[]>('sync', ConfigService.TARGETS_KEY, []).then(targets => {
+    lastSyncTargets = targets
+  })
+
+  ChromeStorageUtils.listen<TargetConfig[]>('sync', ConfigService.TARGETS_KEY, targets => {
+    lastSyncTargets = targets
   })
 
   document.addEventListener('keydown', async event => {
     const url = UrlUtils.getCurrentUrl()
     const hotKey = HotKeyService.parse(event)
 
-    const hitTargets = lastTargets
+    const hitTargets = [...lastLocalTargets, ...lastSyncTargets]
       .filter(target => UrlUtils.checkIsMatchedUrl(target.url, url))
       .filter(target => HotKeyService.checkIsSame(hotKey, target.hotKey))
 
