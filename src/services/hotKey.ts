@@ -118,7 +118,7 @@ const KEYS = [
 
 const parse = (event: KeyboardEvent) => {
   const { altKey, ctrlKey, metaKey, shiftKey, location, key, code } = event
-  return { altKey, ctrlKey, metaKey, shiftKey, location, key: key.toUpperCase(), code }
+  return { altKey, ctrlKey, metaKey, shiftKey, location, key: key?.toUpperCase(), code }
 }
 
 const getText = (hotKey: HotKey) => {
@@ -147,7 +147,7 @@ const getText = (hotKey: HotKey) => {
         if (hotKey.key === ' ') {
           return 'Space'
         } else {
-          return hotKey.key.toUpperCase()
+          return hotKey.key?.toUpperCase()
         }
       })()
 
