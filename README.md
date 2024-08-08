@@ -9,6 +9,12 @@ The **Shortcut Click** extension for Google Chrome allows users to perform click
 - **Active Tab and Scripting Permissions:** The extension can interact with the active tab and execute scripts as needed.
 
 ## Installation
+
+* [Chrome Web Store](https://chromewebstore.google.com/detail/shortcut-click/jhmecpjngghgimacbfbajlpmcimnfihl)
+* [Whale Web Store](https://store.whale.naver.com/detail/bpnlliiailidhhaclfbbhjkfbhfbadfd)
+
+### Manual install
+
 1. Clone the repository:
     ```sh
     git clone https://github.com/ronparkdev/shortcut-click-extension.git
