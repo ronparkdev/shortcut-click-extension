@@ -26,7 +26,6 @@ type Props = {
 
 export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetElement, targetUrl, prevTarget }) => {
   const [open, setOpen] = useState(true)
-  const [selector, setSelector] = useState<string | null>(prevTarget?.selector ?? null)
 
   const [isFocusedInput, setFocusedInput] = useState(false)
   const [targets, setTargets] = useTargetsConfig()
@@ -46,6 +45,12 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
 
   const [elementIndex, setElementIndex] = useState(elements.length - 1)
 
+  const [selector, setSelector] = useState<string | null>(() => {
+    const selector = DomUtils.getSafeXPath(targetElement)
+
+    return selector ?? prevTarget?.selector ?? null
+  })
+
   const urlParts = useMemo(() => targetUrl.split('/'), [targetUrl])
   const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
   const urlPattern = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
@@ -60,7 +65,8 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const handleChangeSlider = (index: number) => {
     setElementIndex(index)
 
-    setSelector(DomUtils.getSafeXPath(elements[elementIndex]))
+    const selector = DomUtils.getSafeXPath(elements[index])
+    setSelector(selector)
   }
 
   useLayoutEffect(() => {
