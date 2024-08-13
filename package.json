@@ -65,5 +65,16 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronparkdev/rollup-plugin-dts-path-alias.git"
+  },
+  "keywords": [],
+  "author": "ronpark.dev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ronparkdev/rollup-plugin-dts-path-alias/issues"
+  },
+  "homepage": "https://github.com/ronparkdev/rollup-plugin-dts-path-alias#readme"
 }
