@@ -127,7 +127,7 @@ void (async () => {
 
   DomHighlightService.injectStyle()
 
-  const showDialog = async ({ element, prevTarget }: { element: Element; prevTarget?: TargetConfig }) => {
+  const showDialog = async ({ element, prevTarget }: { element: Element | null; prevTarget?: TargetConfig }) => {
     const currentUrl = UrlUtils.getCurrentUrl()
     void render({ visible: true, targetElement: element, targetUrl: currentUrl, prevTarget })
   }
@@ -141,7 +141,7 @@ void (async () => {
     prevTarget,
   }: {
     visible: boolean
-    targetElement: Element
+    targetElement: Element | null
     targetUrl: string
     prevTarget?: TargetConfig
   }) => {
@@ -201,14 +201,11 @@ void (async () => {
 
     if (request.action === 'editTarget') {
       const target = request.target as TargetConfig
-      const [element] = DomUtils.findElementsByXPath(target.selector)
+      const [element = null] = DomUtils.findElementsByXPath(target.selector)
 
-      if (!element) {
-        alert('No such element was found on this page.')
-        return
+      if (element) {
+        DomHighlightService.highlight(element)
       }
-
-      DomHighlightService.highlight(element)
 
       showDialog({ element, prevTarget: target })
     }

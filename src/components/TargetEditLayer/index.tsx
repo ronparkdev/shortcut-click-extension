@@ -19,7 +19,7 @@ const { Title, Text } = Typography
 type Props = {
   onChangeHighlight: (element: Element | null) => void
   onClose: () => void
-  targetElement: Element
+  targetElement: Element | null
   targetUrl: string
   prevTarget?: TargetConfig
 }
@@ -46,7 +46,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [elementIndex, setElementIndex] = useState(elements.length - 1)
 
   const [selector, setSelector] = useState<string | null>(() => {
-    const selector = DomUtils.getSafeXPath(targetElement)
+    const selector = targetElement !== null ? DomUtils.getSafeXPath(targetElement) : null
 
     return selector ?? prevTarget?.selector ?? null
   })
@@ -63,6 +63,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [errorMessage, setErrorMessage] = useState('')
 
   const handleChangeSlider = (index: number) => {
+    console.log(1)
     setElementIndex(index)
 
     const selector = DomUtils.getSafeXPath(elements[index])
@@ -157,7 +158,9 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
       return 'invalid'
     }
   })()
-  const isValid = HotKeyService.isValid(hotKey) && selectorState === 'valid'
+  const isValid =
+    HotKeyService.isValid(hotKey) &&
+    (selectorState === 'valid' || (!!prevTarget && selectorState === 'elementNotIncluded'))
 
   return (
     <Modal
@@ -203,27 +206,29 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
                 : 'Click here to record shortcut'}
           </Button>
         </Form.Item>
-        <Form.Item
-          label={
-            <>
-              Element{' '}
-              <Tooltip
-                placement="bottomLeft"
-                title={'Adjust the slider to select the specific range of the item you want to set a shortcut for'}>
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </>
-          }
-          name="element">
-          <Slider
-            min={0}
-            max={elements.length - 1}
-            value={elementIndex}
-            defaultValue={elementIndex}
-            onChange={handleChangeSlider}
-            tooltip={{ open: false }}
-          />
-        </Form.Item>
+        {elements.length > 0 && (
+          <Form.Item
+            label={
+              <>
+                Element{' '}
+                <Tooltip
+                  placement="bottomLeft"
+                  title={'Adjust the slider to select the specific range of the item you want to set a shortcut for'}>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </>
+            }
+            name="element">
+            <Slider
+              min={0}
+              max={elements.length - 1}
+              value={elementIndex}
+              defaultValue={elementIndex}
+              onChange={handleChangeSlider}
+              tooltip={{ open: false }}
+            />
+          </Form.Item>
+        )}
         <Form.Item
           label={
             <>
@@ -298,19 +303,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
           </Flex>
         </Form.Item>
       </Form>
-      {isVisibleAdvancedOptions && selectorState !== 'valid' && (
-        <Alert
-          style={{ marginTop: 8 }}
-          description={
-            selectorState === 'elementNotIncluded'
-              ? 'The modified xpath does not match the element'
-              : 'There was an error in the xpath selector'
-          }
-          type="error"
-          showIcon
-        />
-      )}
-      {!!errorMessage.length && (
+      {errorMessage.length ? (
         <Alert
           style={{ marginTop: 8 }}
           description={errorMessage}
@@ -319,7 +312,24 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
           closable
           onClose={() => setErrorMessage('')}
         />
-      )}
+      ) : selectorState !== 'valid' ? (
+        <Alert
+          style={{ marginTop: 8 }}
+          description={
+            selectorState === 'elementNotIncluded'
+              ? 'No matching elements found'
+              : "I think there's an error in the XPath"
+          }
+          type={(() => {
+            if (selectorState === 'elementNotIncluded' && !!prevTarget) {
+              return 'warning'
+            } else {
+              return 'error'
+            }
+          })()}
+          showIcon
+        />
+      ) : null}
     </Modal>
   )
 }
