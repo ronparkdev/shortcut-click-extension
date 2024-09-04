@@ -185,9 +185,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
           label={
             <>
               Key{' '}
-              <Tooltip
-                placement="bottomLeft"
-                title={'Adjust the slider to select the specific range of the item you want to set a shortcut for'}>
+              <Tooltip placement="bottomLeft" title={'Press the keys you want to set as a shortcut for this item'}>
                 <QuestionCircleOutlined />
               </Tooltip>
             </>
@@ -209,7 +207,9 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
           label={
             <>
               Element{' '}
-              <Tooltip placement="bottomLeft" title={'Press the keys you want to set as a shortcut for this item'}>
+              <Tooltip
+                placement="bottomLeft"
+                title={'Adjust the slider to select the specific range of the item you want to set a shortcut for'}>
                 <QuestionCircleOutlined />
               </Tooltip>
             </>
