@@ -1,134 +1,50 @@
-import { CloudServerOutlined, DeleteOutlined, DesktopOutlined } from '@ant-design/icons'
-import { Button, List, Card, message } from 'antd'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { ExportOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { Layout, Menu } from 'antd'
+import React, { useState } from 'react'
 
-import { useTargetsConfig } from 'hooks/config'
-import type { TargetConfig } from 'services/config'
-import { HotKeyService } from 'services/hotKey'
+import { ImportOrExport } from './ImportOrExport'
+import { ShortcutList } from './ShortcutList'
 
-export const Options: React.FC = () => {
-  const writingCountRef = useRef<number>(0)
+const { Sider, Content } = Layout
 
-  const [targets, setTargets] = useTargetsConfig()
-  const [sortedTargets, setSortedTargets] = useState<TargetConfig[]>(targets)
+const AppLayout = () => {
+  const [collapsed, setCollapsed] = useState(false)
 
-  const updateSortedTargets = useCallback(() => {
-    setSortedTargets(prevSortedTargets =>
-      targets.sort((left, right) => {
-        let leftIndex = prevSortedTargets.findIndex(
-          target =>
-            HotKeyService.checkIsSame(target.hotKey, left.hotKey) &&
-            target.url === left.url &&
-            target.selector === left.selector,
-        )
-        if (leftIndex === -1) {
-          leftIndex = targets.indexOf(left)
-        }
-        let rightIndex = prevSortedTargets.findIndex(
-          target =>
-            HotKeyService.checkIsSame(target.hotKey, right.hotKey) &&
-            target.url === right.url &&
-            target.selector === right.selector,
-        )
-        if (rightIndex === -1) {
-          rightIndex = targets.indexOf(right)
-        }
-        return leftIndex === -1 || rightIndex === -1 ? 1 : leftIndex - rightIndex
-      }),
-    )
-  }, [targets])
-
-  useEffect(() => {
-    if (writingCountRef.current === 0) {
-      updateSortedTargets()
-    }
-  }, [updateSortedTargets])
-
-  const setTargetLocation = async (target: TargetConfig, location: TargetConfig['location']) => {
-    const index = targets.indexOf(target)
-    if (index === -1) {
-      return
-    }
-
-    try {
-      writingCountRef.current += 1
-
-      await setTargets(
-        targets.map(t => {
-          if (t === target) {
-            return { ...target, location }
-          }
-          return t
-        }),
-      )
-
-      message.success(`This shortcut changed to ${location}`)
-    } catch (error) {
-      message.error('Failed to update')
-    } finally {
-      writingCountRef.current -= 1
-    }
-  }
-
-  const removeTarget = async (target: TargetConfig) => {
-    try {
-      await setTargets(targets.filter(t => t !== target))
-      message.success('Target removed')
-    } catch (error) {
-      message.error('Failed to remove target')
-    }
-  }
+  const [menu, setMenu] = useState(1)
 
   return (
-    <div style={{ padding: '2px' }}>
-      <Card title="Total Shortcuts">
-        <List
-          bordered
-          dataSource={sortedTargets}
-          renderItem={(item, offset) => (
-            <List.Item
-              key={offset}
-              actions={[
-                item.location === 'sync' && (
-                  <Button
-                    type="link"
-                    onClick={() => setTargetLocation(item, 'local')}
-                    icon={<CloudServerOutlined />}
-                    key={0}>
-                    Synced
-                  </Button>
-                ),
-                item.location === 'local' && (
-                  <Button
-                    type="link"
-                    onClick={() => setTargetLocation(item, 'sync')}
-                    icon={<DesktopOutlined />}
-                    key={0}>
-                    Local
-                  </Button>
-                ),
-                <Button type="link" onClick={() => removeTarget(item)} icon={<DeleteOutlined />} key={1} />,
-              ].filter(item => !!item)}>
-              <List.Item.Meta
-                title={
-                  <div
-                    style={{
-                      whiteSpace: 'normal',
-                      wordWrap: 'break-word',
-                    }}>{`URL: ${item.url}`}</div>
-                }
-                description={
-                  <div
-                    style={{
-                      whiteSpace: 'normal',
-                      wordWrap: 'break-word',
-                    }}>{`HotKey: ${HotKeyService.getText(item.hotKey)}`}</div>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      </Card>
-    </div>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider
+        theme="light"
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        breakpoint="lg"
+        onBreakpoint={broken => {
+          setCollapsed(broken)
+        }}>
+        <Menu theme="light" mode="inline" selectedKeys={[String(menu)]} onClick={e => setMenu(Number(e.key))}>
+          <Menu.Item key="1" icon={<UnorderedListOutlined />}>
+            Shortcuts
+          </Menu.Item>
+          <Menu.Item key="2" icon={<ExportOutlined />}>
+            Import/Export
+          </Menu.Item>
+        </Menu>
+      </Sider>
+      <Layout className="site-layout">
+        <Content
+          style={{
+            margin: '24px 16px',
+            padding: 24,
+            minHeight: 280,
+          }}>
+          {menu === 1 && <ShortcutList />}
+          {menu === 2 && <ImportOrExport />}
+        </Content>
+      </Layout>
+    </Layout>
   )
 }
+
+export { AppLayout }

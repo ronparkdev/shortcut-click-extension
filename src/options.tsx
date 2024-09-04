@@ -1,5 +1,5 @@
 void (async () => {
-  const [React, { createRoot }, { DomUtils }, { Options }] = await Promise.all([
+  const [React, { createRoot }, { DomUtils }, { AppLayout }] = await Promise.all([
     import('react'),
     import('react-dom/client'),
     import('utils/dom'),
@@ -11,7 +11,7 @@ void (async () => {
 
   root.render(
     <StrictMode>
-      <Options />
+      <AppLayout />
     </StrictMode>,
   )
 })()

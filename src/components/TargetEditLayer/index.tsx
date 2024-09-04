@@ -17,10 +17,10 @@ import { UrlUtils } from 'utils/url'
 const { Title, Text } = Typography
 
 type Props = {
-  onChangeHighlight: (element: Element | null) => void
+  onChangeHighlight?: (element: Element | null) => void
   onClose: () => void
   targetElement: Element | null
-  targetUrl: string
+  targetUrl: string | null
   prevTarget?: TargetConfig
 }
 
@@ -51,9 +51,10 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
     return selector ?? prevTarget?.selector ?? null
   })
 
-  const urlParts = useMemo(() => targetUrl.split('/'), [targetUrl])
+  const urlParts = useMemo(() => targetUrl?.split('/') ?? [], [targetUrl])
   const [urlPartMaxIndex, setUrlPartMaxIndex] = useState(urlParts.length)
-  const urlPattern = `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*`
+  const urlPattern =
+    urlParts.length > 0 ? `${urlParts.slice(0, urlPartMaxIndex).join('/')}/*` : prevTarget?.url ?? 'https://*'
 
   const [hotKey, setHotKey] = useState<HotKey | null>(prevTarget?.hotKey ?? null)
   const [location, setLocation] = useState<'sync' | 'local'>(prevTarget?.location ?? 'local')
@@ -71,7 +72,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   }
 
   useLayoutEffect(() => {
-    onChangeHighlight(elements[elementIndex])
+    onChangeHighlight?.(elements[elementIndex])
   }, [elementIndex])
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
       if (prevTarget) {
         return prevTarget.url.split('/').length - 1
       }
-      if (lastUsedUrlPattern && UrlUtils.checkIsMatchedUrl(lastUsedUrlPattern, targetUrl)) {
+      if (lastUsedUrlPattern && targetUrl && UrlUtils.checkIsMatchedUrl(lastUsedUrlPattern, targetUrl)) {
         return lastUsedUrlPattern.split('/').length - 1
       }
       return urlParts.length
@@ -93,7 +94,7 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   }, [lastUsedUrlPattern])
 
   const handleClose = () => {
-    onChangeHighlight(null)
+    onChangeHighlight?.(null)
     onClose()
     setOpen(false)
   }
@@ -243,14 +244,16 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
             </>
           }
           name="url">
-          <Input.TextArea readOnly={true} variant="filled" value={urlPattern} autoSize />
-          <Slider
-            min={2}
-            max={urlParts.length}
-            value={urlPartMaxIndex}
-            onChange={setUrlPartMaxIndex}
-            tooltip={{ open: false }}
-          />
+          <Input.TextArea readOnly={true} variant="filled" defaultValue={urlPattern} value={urlPattern} autoSize />
+          {urlParts.length > 0 && (
+            <Slider
+              min={2}
+              max={urlParts.length}
+              value={urlPartMaxIndex}
+              onChange={setUrlPartMaxIndex}
+              tooltip={{ open: false }}
+            />
+          )}
         </Form.Item>
         <Form.Item
           label={
