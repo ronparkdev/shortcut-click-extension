@@ -46,9 +46,11 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [elementIndex, setElementIndex] = useState(elements.length - 1)
 
   const [selector, setSelector] = useState<string | null>(() => {
-    const selector = DomUtils.getSafeXPath(targetElement)
+    if (prevTarget?.selector) {
+      return prevTarget.selector
+    }
 
-    return selector ?? prevTarget?.selector ?? null
+    return DomUtils.getSafeXPath(targetElement) ?? null
   })
 
   const urlParts = useMemo(() => targetUrl.split('/'), [targetUrl])
@@ -59,7 +61,12 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
   const [location, setLocation] = useState<'sync' | 'local'>(prevTarget?.location ?? 'local')
 
   const [isHotKeyListening, setHotKeyListening] = useState(!prevTarget?.hotKey)
-  const [isVisibleAdvancedOptions, setVisibleAdvancedOptions] = useState(false)
+  const [isVisibleAdvancedOptions, setVisibleAdvancedOptions] = useState(() => {
+    if (prevTarget?.selector) {
+      return prevTarget.selector !== DomUtils.getSafeXPath(targetElement)
+    }
+    return false
+  })
   const [errorMessage, setErrorMessage] = useState('')
 
   const handleChangeSlider = (index: number) => {
@@ -203,27 +210,29 @@ export const TargetEditLayer: FC<Props> = ({ onChangeHighlight, onClose, targetE
                 : 'Click here to record shortcut'}
           </Button>
         </Form.Item>
-        <Form.Item
-          label={
-            <>
-              Element{' '}
-              <Tooltip
-                placement="bottomLeft"
-                title={'Adjust the slider to select the specific range of the item you want to set a shortcut for'}>
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </>
-          }
-          name="element">
-          <Slider
-            min={0}
-            max={elements.length - 1}
-            value={elementIndex}
-            defaultValue={elementIndex}
-            onChange={handleChangeSlider}
-            tooltip={{ open: false }}
-          />
-        </Form.Item>
+        {!isVisibleAdvancedOptions && (
+          <Form.Item
+            label={
+              <>
+                Element{' '}
+                <Tooltip
+                  placement="bottomLeft"
+                  title={'Adjust the slider to select the specific range of the item you want to set a shortcut for'}>
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </>
+            }
+            name="element">
+            <Slider
+              min={0}
+              max={elements.length - 1}
+              value={elementIndex}
+              defaultValue={elementIndex}
+              onChange={handleChangeSlider}
+              tooltip={{ open: false }}
+            />
+          </Form.Item>
+        )}
         <Form.Item
           label={
             <>
